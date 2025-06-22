@@ -1,0 +1,208 @@
+<section class="container py-5" id="portfolio">
+  <h2 class="text-center">SERVICIOS</h2>
+  <hr class="mb-5">
+
+  <!-- Carrusel 1 -->
+  <div id="carouselServicios1" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="hover">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <div class="row">
+          <!-- Servicio 1 -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <img src="{{ url_for('static', filename='img/consultoria_economico_financiera.png') }}" class="card-img-top img-fluid object-fit-cover" style="height: 300px; width: 100%;" alt="Consultoría">
+              <div class="card-body">
+                <h5 class="card-title">Consultoría Económico Financiera</h5>
+                <p class="card-text">La complejidad volátil de las variables macroeconómicas genera inquietud...</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalConsultoria">Conocer más</button>
+              </div>
+            </div>
+          </div>
+          <!-- Servicio 2 -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <img src="{{ url_for('static', filename='img/evaluacion_de_proyectos.jpg') }}" class="card-img-top img-fluid object-fit-cover" style="height: 300px; width: 100%;" alt="Evaluación">
+              <div class="card-body">
+                <h5 class="card-title">Evaluación de Proyectos</h5>
+                <p class="card-text">La formulación y evaluación de proyectos públicos y privados...</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalProyectos">Conocer más</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carrusel 2 -->
+      <div class="carousel-item">
+        <div class="row">
+          <!-- Servicio 3 -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <img src="{{ url_for('static', filename='img/precios_de_transferencia.jpg') }}" class="card-img-top img-fluid object-fit-cover" style="height: 300px; width: 100%;" alt="Precios de Transferencia">
+              <div class="card-body">
+                <h5 class="card-title">Estudio de Precios de Transferencia</h5>
+                <p class="card-text">Brindamos asesoramiento para su operativa de exportación e importación...</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTransferencia">Conocer más</button>
+              </div>
+            </div>
+          </div>
+          <!-- Servicio 4 -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <img src="{{ url_for('static', filename='img/encuesta_investigaciones_sociales.jpg') }}" class="card-img-top img-fluid object-fit-cover" style="height: 300px; width: 100%;" alt="Encuestas">
+              <div class="card-body">
+                <h5 class="card-title">Encuestas e Investigaciones Sociales</h5>
+                <p class="card-text">Nos especializamos en crear encuestas bien diseñadas y cuidadosamente analizadas...</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEncuestas">Conocer más</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carrusel 3 -->
+      <div class="carousel-item">
+        <div class="row">
+          <!-- Servicio 5 -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <img src="{{ url_for('static', filename='img/analisis_bases_de_datos.jpg') }}" class="card-img-top img-fluid object-fit-cover" style="height: 300px; width: 100%;" alt="Bases de Datos">
+              <div class="card-body">
+                <h5 class="card-title">Análisis de Bases de Datos</h5>
+                <p class="card-text">La cantidad de información disponible hace indispensable el conocimiento de habilidades...</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalDatos">Conocer más</button>
+              </div>
+            </div>
+          </div>
+          <!-- Servicio 6 -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <img src="{{ url_for('static', filename='img/econometria_espacial.jpg') }}" class="card-img-top img-fluid object-fit-cover" style="height: 300px; width: 100%;" alt="Econometría Espacial">
+              <div class="card-body">
+                <h5 class="card-title">Econometría Espacial</h5>
+                <p class="card-text">El estudio de los patrones espaciales a través de nuevas tecnologías...</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEspacial">Conocer más</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselServicios1" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselServicios1" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+    </button>
+  </div>
+</section>
+
+<!-- Modal 1: Consultoría Económico Financiera -->
+<div class="modal fade" id="modalConsultoria" tabindex="-1" aria-labelledby="modalConsultoriaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalConsultoriaLabel">Consultoría Económico Financiera</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>La complejidad volátil de las variables macroeconómicas genera inquietud y curiosidad sobre las medidas económicas tomadas por los policy makers. Es siempre valorada la opinión profesional sobre los argumentos político-económicos de funcionarios gubernamentales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver a Servicios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Evaluación de Proyectos -->
+<div class="modal fade" id="modalProyectos" tabindex="-1" aria-labelledby="modalProyectosLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalProyectosLabel">Evaluación de Proyectos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>La Formulación y Evaluación de Proyectos Públicos y Privados, en lo que atañe a estudios de mercado, tamaño y localización del proyecto, inversiones, financiamiento, rentabilidad y balanza de divisas, estimación de la demanda (privada y social), proyección de la oferta y de las curvas de costos (privados y sociales), estimación de impactos e incidencia de programas sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver a Servicios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Precios de Transferencia -->
+<div class="modal fade" id="modalTransferencia" tabindex="-1" aria-labelledby="modalTransferenciaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTransferenciaLabel">Estudio de Precios de Transferencia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Brindamos asesoramiento para su operativa de exportación y/o importación con empresas del exterior, evaluando las actividades y funciones desarrolladas por su Compañía, los riesgos asumidos por la misma y los activos utilizados en el ejercicio de dichas funciones. Generamos informes con justificaciones del análisis de las operaciones sujetas a la normativa, para transacciones con sujetos vinculados o radicados en países no cooperantes y PJBONT. Incluye formularios F2668, F4501, F8096, F8097 e Informe Maestro.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver a Servicios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 4: Encuestas e Investigaciones Sociales -->
+<div class="modal fade" id="modalEncuestas" tabindex="-1" aria-labelledby="modalEncuestasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEncuestasLabel">Encuestas e Investigaciones Sociales</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Nos especializamos en crear encuestas bien diseñadas y cuidadosamente analizadas que brindan información para la toma de decisiones. Contamos con un equipo de encuestadores y analistas con amplia experiencia en investigación y relevamiento de temas económicos, sociales y políticos. Realizamos estudios de mercado, de opinión pública, diagnóstico de coyuntura, clima social, evaluación de impacto, marketing político y análisis electoral.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver a Servicios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 5: Análisis de Bases de Datos -->
+<div class="modal fade" id="modalDatos" tabindex="-1" aria-labelledby="modalDatosLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDatosLabel">Análisis de Bases de Datos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>La cantidad de información disponible para el estudio de fenómenos económicos y sociales hace indispensable el conocimiento de habilidades para el manejo de esta información. Ofrecemos capacidad de análisis de datos e información tanto estructurada como no estructurada, a través del dominio de forecasting, machine learning y deep learning.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver a Servicios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 6: Econometría Espacial -->
+<div class="modal fade" id="modalEspacial" tabindex="-1" aria-labelledby="modalEspacialLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEspacialLabel">Econometría Espacial</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Al observar los diferentes elementos contenidos en una capa de información geográfica se identifican patrones, distribuciones o agrupaciones de entidades que responden a una lógica. El estudio de los patrones espaciales a través de las nuevas tecnologías brinda explicación a la determinación de clústers con significancia estadística.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver a Servicios</button>
+      </div>
+    </div>
+  </div>
+</div>

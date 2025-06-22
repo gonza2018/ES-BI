@@ -1,0 +1,19 @@
+.whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    font-size: 50px;
+}
+.social-icon{
+    color:darkseagreen;
+    margin: 5 5px;
+    font-size: 40px;
+}
+.social-icon:hover{
+    color: chartreuse;
+}
+
+html {
+  scroll-behavior: smooth;
+}

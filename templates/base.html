@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- Descripción general -->
+    <meta name="description" content="Consultora especializada en estudios económicos, inteligencia de negocios y análisis de datos.">
+
+    <!-- Autor -->
+    <meta name="author" content="ES & BI">
+
+    <!-- Palabras clave -->
+    <meta name="keywords" content="consultoría económica, inteligencia de negocios, estudios sectoriales, análisis de datos, econometría espacial, Formulación de Proyectos, precios de transferencia">
+
+    <!-- Viewport para responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Open Graph (para redes sociales) -->
+    <meta property="og:title" content="ES+BI - Estadísticas e Inteligencia de Negocios">
+    <meta property="og:description" content="Consultora especializada en estudios económicos, proyecciones macroeconómicas y análisis de datos.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/preview.jpg', _external=True) }}">
+    <meta property="og:url" content="https://gserelic.com">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ES & BI">
+    <title>{% block title %}{% endblock %} ES & BI</title>
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/bootstrap.min.css' )}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/all.min.css' )}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/styles.css' )}}">
+</head>
+<body>
+    {% block content %}
+
+    {% endblock %}
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>
