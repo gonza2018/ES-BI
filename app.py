@@ -1,7 +1,10 @@
 from flask import Flask, render_template, send_from_directory
+from flask_compress import Compress
 import os
 
+
 app = Flask(__name__)
+Compress(app)
 
 
 @app.route('/')
@@ -26,6 +29,18 @@ def favicon():
         'favicon.ico',
         mimetype='image/vnd.microsoft.icon'
     )
+
+
+@app.after_request
+def add_header(response):
+    if 'Cache-Control' not in response.headers and (
+        response.content_type.startswith('text/') or
+        'javascript' in response.content_type or
+        'image' in response.content_type
+    ):
+        response.cache_control.max_age = 31536000  # 1 año en segundos
+        response.cache_control.public = True
+    return response
 
 
 if __name__ == '__main__':
