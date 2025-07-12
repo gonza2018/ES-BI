@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request
 from flask_compress import Compress
 import os
 
@@ -17,8 +17,18 @@ def contacto():
     return render_template("contact.html")
 
 
-@app.route('/send_mail')
+@app.route('/send_mail', methods=['GET', 'POST'])
 def send_mail():
+    if request.method == 'POST':
+        # Acá podés capturar los datos del formulario
+        nombre = request.form.get('name')
+        email = request.form.get('email')
+        mensaje = request.form.get('message')
+        # Podés agregarte un print() para ver en los logs si llegan
+        print(f"Mensaje de {nombre} <{email}>: {mensaje}")
+
+        return render_template("send_mail.html", enviado=True)
+
     return render_template("send_mail.html")
 
 
