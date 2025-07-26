@@ -17,3 +17,18 @@
 html {
   scroll-behavior: smooth;
 }
+
+.cv-btn {
+  background-color: #1a73e8;
+  border: none;
+  padding: 12px 24px;
+  font-weight: 500;
+  color: #fff;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.cv-btn:hover {
+  background-color: #0c5cd4;
+  text-decoration: none;
+}
