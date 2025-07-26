@@ -16,6 +16,9 @@ def index():
 def contacto():
     return render_template("contact.html")
 
+@app.route("/cv")
+def gonzalo_sereno():
+    return render_template("gonzalosereno.html")
 
 @app.route('/send_mail', methods=['GET', 'POST'])
 def send_mail():
