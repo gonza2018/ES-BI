@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block body_class %}portal-body{% endblock %}
+{% block content %}
+<nav class="navbar navbar-dark bg-dark" aria-label="Portal">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'portal:inicio' %}">
+            <img src="{% static 'sitio/img/es_bi_logo.png' %}" alt="" width="32" height="32">
+            ES & BI <span class="fw-light">· Portal de clientes</span>
+        </a>
+        {% if user.is_authenticated %}
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-light small d-none d-sm-inline">{{ user.email }}</span>
+            <form method="post" action="{% url 'portal:logout' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
+            </form>
+        </div>
+        {% else %}
+        <a class="nav-link text-light small" href="{% url 'sitio:inicio' %}">Volver al sitio</a>
+        {% endif %}
+    </div>
+</nav>
+<main id="contenido" class="container py-5">
+    {% block portal %}{% endblock %}
+</main>
+{% endblock %}

@@ -1,0 +1,33 @@
+/* Página personal (/cv/). Poppins alojada localmente. */
+@font-face { font-family: "Poppins"; font-weight: 300; font-display: swap; src: url("../fonts/poppins-latin-300-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 500; font-display: swap; src: url("../fonts/poppins-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 700; font-display: swap; src: url("../fonts/poppins-latin-700-normal.woff2") format("woff2"); }
+
+.pagina-cv main {
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-weight: 300;
+    background: linear-gradient(135deg, #f2f6ff, #ffffff);
+    background-size: 400% 400%;
+    animation: cv-gradiente 10s ease infinite;
+}
+.pagina-cv main h1, .pagina-cv main h2, .pagina-cv main h3 { font-weight: 500; }
+.pagina-cv .cv-intro { background: rgba(248, 249, 250, .7); }
+.pagina-cv .card { transition: transform .3s ease; }
+.pagina-cv .card:hover { transform: scale(1.03); }
+.texto-rotativo { color: #0d6efd; font-weight: 500; border-right: 2px solid currentColor; padding-right: 2px; }
+
+@keyframes cv-gradiente {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Aparición suave de secciones: solo si hay JS y el usuario no pidió menos movimiento */
+.js-animar .aparecer { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+.js-animar .aparecer.visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pagina-cv main { animation: none; }
+    .pagina-cv .card:hover { transform: none; }
+    .texto-rotativo { border-right: 0; }
+}

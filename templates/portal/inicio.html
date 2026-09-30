@@ -1,0 +1,18 @@
+{% extends 'portal/base_portal.html' %}
+{% block title %}Mis tableros | Portal ES & BI{% endblock %}
+{% block portal %}
+<h1 class="h3 mb-1">Hola, {{ user.get_short_name }}</h1>
+<p class="text-secondary mb-4">
+    {% if grupos %}Organismo: {{ grupos|join:", " }}{% elif user.is_superuser %}Administrador: ve todos los proyectos.{% else %}Su cuenta todavía no tiene un organismo asignado.{% endif %}
+</p>
+{% if paquetes %}
+    {# Paso 2: grilla de tarjetas con miniatura, título, tipo, estado y fecha #}
+{% else %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <h2 class="h5">Todavía no hay tableros publicados para usted</h2>
+        <p class="mb-0 text-secondary">Cuando haya un tablero o sitio en revisión para su organismo, va a aparecer en esta página.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

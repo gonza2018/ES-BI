@@ -1,0 +1,4 @@
+# Los scripts que corre Render (Linux) tienen que quedar con saltos de línea LF,
+# aunque se editen o se suban desde Windows.
+*.sh text eol=lf
+*.py text eol=lf

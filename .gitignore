@@ -1,0 +1,13 @@
+.env
+*.env
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+venv/
+staticfiles/
+datos_locales/
+*.sqlite3
+*.sqlite3-*
+.DS_Store
+Thumbs.db
