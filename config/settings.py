@@ -51,7 +51,8 @@ REDIRIGIR_A_CANONICO = env_list("REDIRIGIR_A_CANONICO", "")
 RESPALDO_TOKEN = os.environ.get("RESPALDO_TOKEN", "").strip()
 
 # Directorio de datos persistentes (disco de Render montado en /var/data).
-DATA_DIR = Path(os.environ.get("DATA_DIR", BASE_DIR / "datos_locales"))
+# "or": una variable definida pero vacía (DATA_DIR= en el .env) también usa el valor por defecto.
+DATA_DIR = Path(os.environ.get("DATA_DIR") or BASE_DIR / "datos_locales")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 INSTALLED_APPS = [

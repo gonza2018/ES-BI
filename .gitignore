@@ -7,6 +7,10 @@ __pycache__/
 venv/
 staticfiles/
 datos_locales/
+# Por si DATA_DIR apunta a la raíz del proyecto: nunca subir datos ni respaldos
+respaldos/
+media_publica/
+paquetes_privados/
 *.sqlite3
 *.sqlite3-*
 .DS_Store
