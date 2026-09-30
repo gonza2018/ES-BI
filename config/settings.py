@@ -192,6 +192,9 @@ EMAIL_TIMEOUT = 15
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "webmaster@localhost")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 CONTACTO_DESTINATARIOS = env_list("CONTACTO_DESTINATARIOS", EMAIL_HOST_USER)
+# WhatsApp del sitio: solo dígitos, con código de país (ej. 5493851234567).
+# Vacío = no se muestran los botones de WhatsApp.
+WHATSAPP_NUMERO = "".join(c for c in os.environ.get("WHATSAPP_NUMERO", "") if c.isdigit())
 # Si está definida, el formulario envía por Formspree (HTTPS) en lugar de SMTP.
 FORMSPREE_ID = os.environ.get("FORMSPREE_ID", "").strip()
 

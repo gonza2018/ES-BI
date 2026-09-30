@@ -6,18 +6,24 @@
                 <p class="text-secondary mb-0">Estadísticas Económicas e Inteligencia de Negocios.</p>
             </div>
             <div class="col-md-6 text-md-end">
+                {% if WHATSAPP_NUMERO %}
                 <p class="text-light mb-2">Envíenos un mensaje</p>
-                <a href="https://wa.me/5493855940030" target="_blank" rel="noopener" class="social-icon"
+                <a href="https://wa.me/{{ WHATSAPP_NUMERO }}" target="_blank" rel="noopener" class="social-icon"
                    aria-label="Escribir por WhatsApp">
                     <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
                 </a>
+                {% else %}
+                <a href="{% url 'sitio:inicio' %}#contacto" class="btn btn-outline-light">Envíenos un mensaje</a>
+                {% endif %}
             </div>
         </div>
         <hr class="custom-hr">
         <p class="text-secondary mb-0">© {% now "Y" %} ES & BI. Todos los derechos reservados.</p>
     </div>
 </footer>
-<a href="https://wa.me/5493855940030" target="_blank" rel="noopener" class="whatsapp-float"
+{% if WHATSAPP_NUMERO %}
+<a href="https://wa.me/{{ WHATSAPP_NUMERO }}" target="_blank" rel="noopener" class="whatsapp-float"
    aria-label="Escribir por WhatsApp">
     <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
 </a>
+{% endif %}

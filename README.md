@@ -22,6 +22,7 @@ El admin está en **`/gestion/`** (no en `/admin/`).
 | `HOST_CANONICO` | `www.gserelic.com` | Host oficial del sitio. |
 | `REDIRIGIR_A_CANONICO` | `gserelic.com` | Hosts que redirigen (301) al canónico. |
 | `DATA_DIR` | `/var/data` | Punto de montaje del disco persistente: bases, archivos subidos y respaldos. |
+| `WHATSAPP_NUMERO` | ej. `5493851234567` | Solo dígitos, con código de país (54), 9 y característica sin 0 ni 15. Vacía = sin botones de WhatsApp. |
 | `FORMSPREE_ID` | `movwnndw` | Si está definida, el formulario envía por **Formspree** (HTTPS) y no usa SMTP. Funciona también en el plan free. |
 | `EMAIL_HOST_USER` | tu cuenta de Gmail | Solo si no se usa Formspree. |
 | `EMAIL_HOST_PASSWORD` | contraseña de aplicación | Solo si no se usa Formspree. |
@@ -121,6 +122,20 @@ No hay registro público. Todo se hace en `/gestion/`:
 
 Si alguien queda bloqueado por intentos fallidos (5 intentos → 1 hora), se puede liberar en
 *Axes → Access attempts* borrando su registro, o con `python manage.py axes_reset`.
+
+## Mensajes del formulario de contacto
+
+Cada mensaje se **guarda primero** en la base y **después** se intenta el aviso por correo
+(Formspree o SMTP). Si el aviso falla, el visitante igual ve "Mensaje enviado" y el mensaje no se pierde.
+
+`/gestion/` → *Sitio público* → **Mensajes de contacto**:
+- Los no leídos se filtran con *Por leído → No*. Abrir un mensaje lo marca como leído.
+- La columna *aviso por correo enviado* muestra si te llegó el correo. Si no, el campo *error del aviso*
+  dice por qué (por ejemplo, el motivo que da Formspree).
+- Acción **Reintentar el aviso por correo**: seleccionar mensajes → elegir la acción → *Ir*.
+
+Conviene entrar a revisar cada tanto, sobre todo hasta confirmar que los avisos llegan bien.
+Los mensajes tienen datos personales de quien escribe: borrar los que ya no hagan falta.
 
 ## Fichas de proyectos (sitio público)
 

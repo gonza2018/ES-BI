@@ -6,6 +6,8 @@ from django.http import FileResponse, HttpResponse, HttpResponseForbidden
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
+from sitio.views import modo_contacto
+
 from .ip_cliente import obtener_ip
 from .respaldo import crear_respaldo
 
@@ -42,5 +44,8 @@ def diagnostico_ip(request):
         f"IP que usa el bloqueo por intentos fallidos: {obtener_ip(request)}",
         "",
         "Tiene que coincidir con tu IP pública (buscá 'cuál es mi IP' en el navegador).",
+        "",
+        f"Formulario de contacto: envía por {modo_contacto()}",
+        f"WhatsApp: {settings.WHATSAPP_NUMERO or '(sin número: botones ocultos)'}",
     ]
     return HttpResponse("\n".join(lineas) + "\n", content_type="text/plain; charset=utf-8")

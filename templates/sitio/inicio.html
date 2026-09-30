@@ -161,7 +161,7 @@
                     {% csrf_token %}
                     {% if error_envio %}
                     <div class="alert alert-danger" role="alert">
-                        No se pudo enviar el mensaje. Intente nuevamente en unos minutos o escríbanos por WhatsApp.
+                        No se pudo enviar el mensaje. Intente nuevamente en unos minutos.{% if WHATSAPP_NUMERO %} También puede escribirnos por WhatsApp.{% endif %}
                     </div>
                     {% elif form.errors %}
                     <div class="alert alert-warning" role="alert">Revise los campos marcados.</div>

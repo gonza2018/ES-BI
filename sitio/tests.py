@@ -2,7 +2,7 @@ from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import Proyecto
+from .models import MensajeContacto, Proyecto
 
 DATOS = {"nombre": "Ana Pérez", "email": "ana@ejemplo.com", "mensaje": "Quisiera una cotización."}
 
@@ -27,6 +27,7 @@ class ContactoTests(TestCase):
         r = self.client.post(reverse("sitio:contacto"), {**DATOS, "sitio_web": "http://spam"})
         self.assertRedirects(r, reverse("sitio:contacto_enviado"))
         self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(MensajeContacto.objects.count(), 0)  # el spam no se guarda
 
     def test_datos_invalidos(self):
         r = self.client.post(reverse("sitio:contacto"), {**DATOS, "email": "no-es-correo"})
@@ -34,8 +35,26 @@ class ContactoTests(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend", EMAIL_HOST="127.0.0.1", EMAIL_PORT=1)
-    def test_falla_smtp_muestra_error_y_no_500(self):
+    def test_falla_smtp_el_mensaje_igual_queda_guardado(self):
         r = self.client.post(reverse("sitio:contacto"), DATOS)
+        self.assertRedirects(r, reverse("sitio:contacto_enviado"))
+        m = MensajeContacto.objects.get()
+        self.assertEqual(m.mensaje, "Quisiera una cotización.")
+        self.assertFalse(m.aviso_enviado)
+        self.assertIn("SMTP", m.aviso_error)
+
+    def test_envio_correcto_guarda_y_marca_aviso(self):
+        self.client.post(reverse("sitio:contacto"), DATOS)
+        m = MensajeContacto.objects.get()
+        self.assertTrue(m.aviso_enviado)
+        self.assertFalse(m.leido)
+
+    def test_si_no_se_puede_guardar_ni_enviar_muestra_error(self):
+        from unittest import mock
+
+        with mock.patch.object(MensajeContacto.objects, "create", side_effect=Exception("disco")), \
+                mock.patch("sitio.views.enviar_contacto", side_effect=Exception("sin correo")):
+            r = self.client.post(reverse("sitio:contacto"), DATOS)
         self.assertEqual(r.status_code, 503)
         self.assertContains(r, "No se pudo enviar el mensaje", status_code=503)
 
@@ -90,7 +109,6 @@ class ContenidoTests(TestCase):
             self.assertContains(r, f'data-bs-target="#modal-{s["id"]}"')
             self.assertContains(r, f'id="modal-{s["id"]}"')
         self.assertContains(r, "carruselServicios")
-        self.assertContains(r, "https://wa.me/5493855940030")
         self.assertContains(r, 'href="/cv/"')
 
     def test_pagina_cv(self):
@@ -123,15 +141,73 @@ class FormspreeTests(TestCase):
         self.assertEqual(pedido.full_url, "https://formspree.io/f/abc123")
         import json
 
+        self.assertEqual(pedido.get_header("User-agent"), "gserelic.com formulario de contacto")
+        self.assertEqual(pedido.get_header("Origin"), "http://testserver")
         cuerpo = json.loads(pedido.data)
         self.assertEqual(cuerpo["email"], "ana@ejemplo.com")
         self.assertEqual(cuerpo["message"], "Quisiera una cotización.")
 
     @override_settings(FORMSPREE_ID="abc123")
-    def test_falla_formspree_muestra_error(self):
+    def test_rechazo_de_formspree_queda_en_el_log_con_el_motivo(self):
+        import io
+        import urllib.error
         from unittest import mock
 
-        with mock.patch("sitio.views.urllib.request.urlopen", side_effect=OSError("sin red")):
+        error = urllib.error.HTTPError(
+            "https://formspree.io/f/abc123", 403, "Forbidden", {}, io.BytesIO(b'{"error":"Form not active"}')
+        )
+        with mock.patch("sitio.views.urllib.request.urlopen", side_effect=error), \
+                self.assertLogs("sitio.views", level="ERROR") as registro:
             r = self.client.post(reverse("sitio:contacto"), DATOS)
-        self.assertEqual(r.status_code, 503)
-        self.assertContains(r, "No se pudo enviar el mensaje", status_code=503)
+        self.assertRedirects(r, reverse("sitio:contacto_enviado"))
+        self.assertIn("Form not active", MensajeContacto.objects.get().aviso_error)
+        texto = "\n".join(registro.output)
+        self.assertIn("modo: Formspree (abc123)", texto)
+        self.assertIn("HTTP 403", texto)
+        self.assertIn("Form not active", texto)
+
+    @override_settings(FORMSPREE_ID="abc123")
+    def test_falla_formspree_se_reintenta_desde_el_admin(self):
+        from unittest import mock
+
+        from django.contrib.auth import get_user_model
+
+        with mock.patch("sitio.views.urllib.request.urlopen", side_effect=OSError("sin red")):
+            self.client.post(reverse("sitio:contacto"), DATOS)
+        m = MensajeContacto.objects.get()
+        self.assertFalse(m.aviso_enviado)
+
+        admin = get_user_model().objects.create_superuser("yo@gserelic.com", "clave-segura-123")
+        self.client.force_login(admin)
+        respuesta = mock.MagicMock(status=200)
+        respuesta.__enter__.return_value = respuesta
+        with mock.patch("sitio.views.urllib.request.urlopen", return_value=respuesta):
+            self.client.post(
+                "/gestion/sitio/mensajecontacto/",
+                {"action": "reintentar_aviso", "_selected_action": [m.pk]},
+            )
+        m.refresh_from_db()
+        self.assertTrue(m.aviso_enviado)
+        self.assertEqual(m.aviso_error, "")
+
+    def test_abrir_en_el_admin_lo_marca_leido(self):
+        from django.contrib.auth import get_user_model
+
+        m = MensajeContacto.objects.create(nombre="A", email="a@b.com", mensaje="hola")
+        self.client.force_login(get_user_model().objects.create_superuser("yo@gserelic.com", "clave-segura-123"))
+        self.assertEqual(self.client.get(f"/gestion/sitio/mensajecontacto/{m.pk}/change/").status_code, 200)
+        m.refresh_from_db()
+        self.assertTrue(m.leido)
+
+
+class WhatsappTests(TestCase):
+    @override_settings(WHATSAPP_NUMERO="")
+    def test_sin_numero_no_hay_botones(self):
+        r = self.client.get("/")
+        self.assertNotContains(r, "wa.me")
+        self.assertContains(r, "Envíenos un mensaje")
+
+    @override_settings(WHATSAPP_NUMERO="5493851234567")
+    def test_con_numero(self):
+        r = self.client.get("/")
+        self.assertContains(r, "https://wa.me/5493851234567", count=2)  # pie y botón flotante

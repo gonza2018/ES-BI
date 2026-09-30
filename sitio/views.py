@@ -1,5 +1,6 @@
 import json
 import logging
+import urllib.error
 import urllib.request
 
 from django.conf import settings
@@ -11,7 +12,7 @@ from django.views.decorators.http import require_safe, require_http_methods
 
 from .contenido import SERVICIOS, SERVICIOS_EN_DIAPOSITIVAS
 from .forms import ContactoForm
-from .models import Proyecto
+from .models import MensajeContacto, Proyecto
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +27,17 @@ def _contexto_inicio(form=None, error_envio=False):
     }
 
 
-def enviar_contacto(datos):
+def modo_contacto():
+    return f"Formspree ({settings.FORMSPREE_ID})" if settings.FORMSPREE_ID else "SMTP"
+
+
+def enviar_contacto(datos, origen=""):
     """Envía el mensaje del formulario.
 
     Si está definida FORMSPREE_ID, lo manda a Formspree por HTTPS (funciona
     incluso en el plan free de Render, que bloquea SMTP). Si no, por SMTP.
+    `origen` es la dirección del sitio (https://...), que Formspree usa si el
+    formulario tiene restringidos los dominios permitidos.
     """
     if settings.FORMSPREE_ID:
         cuerpo = json.dumps(
@@ -44,12 +51,24 @@ def enviar_contacto(datos):
         pedido = urllib.request.Request(
             f"https://formspree.io/f/{settings.FORMSPREE_ID}",
             data=cuerpo,
-            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                # Sin esto Python se presenta como "Python-urllib", que algunos
+                # servicios bloquean como si fuera un robot.
+                "User-Agent": "gserelic.com formulario de contacto",
+                **({"Origin": origen, "Referer": origen + "/"} if origen else {}),
+            },
             method="POST",
         )
-        with urllib.request.urlopen(pedido, timeout=15) as respuesta:
-            if respuesta.status != 200:
-                raise RuntimeError(f"Formspree respondió {respuesta.status}")
+        try:
+            with urllib.request.urlopen(pedido, timeout=15) as respuesta:
+                if respuesta.status != 200:
+                    raise RuntimeError(f"Formspree respondió {respuesta.status}")
+        except urllib.error.HTTPError as error:
+            # Formspree explica el motivo del rechazo en el cuerpo de la respuesta.
+            detalle = error.read().decode("utf-8", "replace")[:500]
+            raise RuntimeError(f"Formspree rechazó el envío (HTTP {error.code}): {detalle}") from error
         return
 
     EmailMessage(
@@ -59,6 +78,22 @@ def enviar_contacto(datos):
         to=settings.CONTACTO_DESTINATARIOS,
         reply_to=[datos["email"]],  # "Responder" le contesta al visitante
     ).send(fail_silently=False)
+
+
+def avisar_mensaje(mensaje, origen=""):
+    """Intenta avisar por correo de un mensaje ya guardado. Devuelve True si salió."""
+    datos = {"nombre": mensaje.nombre, "email": mensaje.email, "mensaje": mensaje.mensaje}
+    try:
+        enviar_contacto(datos, origen=origen)
+    except Exception as error:
+        logger.exception("Falló el aviso del mensaje de contacto %s (modo: %s)", mensaje.pk, modo_contacto())
+        mensaje.aviso_enviado = False
+        mensaje.aviso_error = f"{modo_contacto()}: {error}"[:2000]
+    else:
+        mensaje.aviso_enviado = True
+        mensaje.aviso_error = ""
+    mensaje.save(update_fields=["aviso_enviado", "aviso_error"])
+    return mensaje.aviso_enviado
 
 
 @require_safe
@@ -84,12 +119,24 @@ def contacto(request):
         # No avisamos al bot: simulamos éxito.
         return redirect("sitio:contacto_enviado")
 
+    origen = request.build_absolute_uri("/").rstrip("/")
+    datos = form.cleaned_data
     try:
-        enviar_contacto(form.cleaned_data)
+        # 1) Guardar primero: aunque el correo falle, el mensaje queda en /gestion/.
+        mensaje = MensajeContacto.objects.create(
+            nombre=datos["nombre"], email=datos["email"], mensaje=datos["mensaje"]
+        )
     except Exception:
-        logger.exception("Falló el envío del formulario de contacto")
-        return render(request, "sitio/inicio.html", _contexto_inicio(form, error_envio=True), status=503)
+        logger.exception("No se pudo guardar el mensaje de contacto; se intenta solo el correo")
+        try:
+            enviar_contacto(datos, origen=origen)
+        except Exception:
+            logger.exception("Tampoco salió el correo (modo: %s)", modo_contacto())
+            return render(request, "sitio/inicio.html", _contexto_inicio(form, error_envio=True), status=503)
+        return redirect("sitio:contacto_enviado")
 
+    # 2) Avisar por correo. Si falla, queda registrado en el mensaje y se reintenta desde el admin.
+    avisar_mensaje(mensaje, origen=origen)
     return redirect("sitio:contacto_enviado")
 
 

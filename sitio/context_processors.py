@@ -6,4 +6,4 @@ def sitio(request):
         base = f"https://{settings.HOST_CANONICO}"
     else:
         base = request.build_absolute_uri("/").rstrip("/")
-    return {"URL_BASE": base}
+    return {"URL_BASE": base, "WHATSAPP_NUMERO": settings.WHATSAPP_NUMERO}
