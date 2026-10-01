@@ -23,3 +23,11 @@ class LoginCorreoForm(AuthenticationForm):
 
     def clean_username(self):
         return self.cleaned_data["username"].strip().lower()
+
+
+class SubirPaqueteForm(forms.Form):
+    archivo = forms.FileField(
+        label="Paquete (.zip)",
+        help_text="El zip con index.html y meta.json. Si el slug ya existe, se sube como versión nueva.",
+        widget=forms.ClearableFileInput(attrs={"accept": ".zip,application/zip"}),
+    )

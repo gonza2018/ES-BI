@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; Subir paquete
+</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  <p>Subí el <strong>.zip</strong> que entrega el Claude de dashboards. Se valida, se guarda en el
+  directorio privado y se publica. <strong>meta.json manda</strong>: si su <code>slug</code> ya existe,
+  se sube como versión nueva y la anterior queda en el historial.</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<p class="errornote">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+    <fieldset class="module aligned">
+      <div class="form-row{% if form.archivo.errors %} errors{% endif %}">
+        {{ form.archivo.errors }}
+        <div class="flex-container">
+          <label class="required" for="{{ form.archivo.id_for_label }}">{{ form.archivo.label }}:</label>
+          {{ form.archivo }}
+        </div>
+        <div class="help">{{ form.archivo.help_text }}</div>
+      </div>
+    </fieldset>
+    <div class="submit-row"><input type="submit" value="Subir y publicar" class="default"></div>
+  </form>
+  <h2>Qué se controla</h2>
+  <ul>
+    <li>Que existan <code>index.html</code> y <code>meta.json</code> (con <code>slug</code> y <code>titulo</code>).</li>
+    <li>Que no haya rutas con <code>..</code>, rutas absolutas ni enlaces simbólicos.</li>
+    <li>Que no pese más de 50 MB descomprimido.</li>
+    <li>Que no haya archivos ejecutables de servidor (<code>.py</code>, <code>.php</code>, <code>.sh</code>…).</li>
+  </ul>
+</div>
+{% endblock %}

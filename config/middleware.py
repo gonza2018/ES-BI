@@ -34,10 +34,9 @@ CSP_ESTRICTA = "; ".join(
 )
 
 
-# CSP para las páginas de los paquetes del portal (Paso 2). Probada con pbg-sde v1.1:
-# todo local (Plotly y fuentes en assets/), JS y estilos inline, sin 'unsafe-eval' ni CDNs.
-# frame-ancestors/base-uri/form-action/object-src se agregan como endurecimiento y no
-# afectan a los dashboards.
+# CSP de los archivos de paquetes (/portal/ver/...). Probada con pbg-sde v1.1: todo local
+# (Plotly y fuentes en assets/), JS y estilos inline, sin 'unsafe-eval' ni CDNs.
+# El sitio público y el portal conservan la CSP estricta de arriba.
 CSP_PAQUETES = "; ".join(
     [
         "default-src 'self'",
@@ -45,10 +44,10 @@ CSP_PAQUETES = "; ".join(
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data:",
         "font-src 'self'",
+        "connect-src 'self'",
         "frame-ancestors 'self'",
-        "base-uri 'self'",
-        "form-action 'none'",
         "object-src 'none'",
+        "base-uri 'self'",
     ]
 )
 

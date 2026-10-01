@@ -6,7 +6,7 @@ Sitio institucional de ES & BI y portal privado de clientes (`/portal/`), en Dja
 |---|---|
 | `cuentas` | Usuario con **correo como identificador** (sin username). |
 | `sitio` | Web pública: inicio, quiénes somos, servicios (carrusel con ventanas "Conocer más"), proyectos, contacto, página personal `/cv/`, `robots.txt`, `sitemap.xml`. |
-| `portal` | Login por correo y contraseña, protección contra fuerza bruta (django-axes). Paso 2: paquetes de dashboards. |
+| `portal` | Login por correo y contraseña, protección contra fuerza bruta (django-axes) y **paquetes** (dashboards y sitios estáticos) privados por organismo. |
 | `cfi_matriz` | *(Paso 3, pendiente)* App de carga de datos del CFI, con base propia. |
 
 El admin está en **`/gestion/`** (no en `/admin/`).
@@ -111,17 +111,64 @@ El sitio redirige `gserelic.com` → `https://www.gserelic.com`.
 **Primer usuario administrador:** en Render → *Shell*: `python manage.py createsuperuser`, o bien definir
 `DJANGO_SUPERUSER_EMAIL` y `DJANGO_SUPERUSER_PASSWORD` y redeployar (después borrar esas dos variables).
 
-## Usuarios y grupos
+## Portal: grupos, usuarios y paquetes
 
-No hay registro público. Todo se hace en `/gestion/`:
+Todo se hace en `/gestion/`. La regla es simple: **cada organismo es un grupo**; un usuario ve
+los paquetes de sus grupos; el superusuario ve todo.
 
-1. **Grupos** → *Agregar*: uno por organismo (por ejemplo `DGEyC SDE`, `CFI`).
-2. **Usuarios** → *Agregar*: correo, nombre, organismo, contraseña y grupo(s).
-3. Para quitar el acceso, desmarcar **Activo** (no borrar: se pierde el registro de último acceso).
-4. La columna **last login** muestra cuándo entró cada usuario por última vez.
+### Crear un grupo (uno por organismo)
+*Autenticación y autorización* → **Grupos** → *Agregar*. Nombre, por ejemplo `DGEyC SDE` o `CFI`.
+No hace falta marcar permisos: los grupos solo se usan para decidir quién ve cada paquete.
 
-Si alguien queda bloqueado por intentos fallidos (5 intentos → 1 hora), se puede liberar en
-*Axes → Access attempts* borrando su registro, o con `python manage.py axes_reset`.
+> Truco: si el nombre del grupo es **igual** al `organismo` de `meta.json` (sin importar mayúsculas),
+> el paquete se le asigna solo la primera vez que se sube. `pbg-sde` trae
+> `"organismo": "DGEyC Santiago del Estero"`; si el grupo se llama `DGEyC SDE`, hay que asignarlo a mano.
+
+### Crear un usuario
+*Cuentas de usuario* → **Usuarios** → *Agregar*: correo, **nombre** (el portal saluda con el primero),
+organismo, contraseña (10+ caracteres) y su grupo. No hay registro público ni recuperación de contraseña
+por correo: si alguien la olvida, se la cambiás desde su ficha (*formulario* de contraseña).
+
+- Para quitar el acceso: desmarcar **Activo** (no borrar: se pierde el registro de último acceso).
+- La columna **last login** muestra cuándo entró por última vez (si el evaluador abrió el portal).
+- Bloqueado por intentos fallidos (5 → 1 hora): *Axes → Access attempts* → borrar su registro,
+  o `python manage.py axes_reset`.
+
+### Subir un paquete nuevo
+*Portal de clientes* → **Paquetes** → **Subir paquete (.zip)** → elegir el zip → *Subir y publicar*.
+
+El sistema controla que tenga `index.html` y `meta.json`, que no haya rutas con `..`, rutas absolutas
+ni enlaces simbólicos, que no pese más de 50 MB descomprimido y que no traiga archivos ejecutables de
+servidor (`.py`, `.php`, `.sh`…). Si algo falla, lo dice y no guarda nada.
+
+Después de subirlo, en su ficha: **Grupos con acceso** → pasar el grupo a la derecha → *Guardar*.
+Hasta que tenga un grupo, solo lo ve el superusuario.
+
+### Actualizar un paquete (versión nueva)
+Subir el zip nuevo igual que arriba (o desde la ficha: **Subir nueva versión (.zip)**). Si el `slug`
+de `meta.json` ya existe, se publica la versión nueva y **la anterior queda en el historial** (abajo
+en la ficha). Los grupos asignados se conservan. `meta.json` manda: título, estado, versión, fecha y
+descripción se actualizan con lo que traiga.
+
+**Volver a una versión anterior:** *Versiones de paquetes* → tildar la versión → acción
+*Volver a esta versión* → *Ir*.
+
+### Despublicar, cambiar estado o borrar
+- **Despublicar** (ocultarlo sin borrarlo): en la ficha, desmarcar **Publicado**; o en la lista,
+  tildar y elegir la acción *Despublicar*. El superusuario lo sigue viendo, con la etiqueta *No publicado*.
+- **Cambiar el estado** (borrador / en revisión / aprobado) sin subir otro zip: campo **Estado** en la ficha.
+- **Borrar**: botón *Eliminar* de la ficha. Borra también sus archivos del disco (todas las versiones).
+
+### Cómo se sirve (para la próxima persona que toque el código)
+- `/portal/` grilla · `/portal/tablero/<slug>/` página con el iframe, descargas y pantalla completa ·
+  `/portal/ver/<slug>/` y `/portal/ver/<slug>/<ruta>` archivos del paquete.
+- Cada archivo pasa por la vista protegida: sin sesión → login; grupo incorrecto → 404 (no revela que existe).
+- Solo se sirven `.html .js .css .json .woff2 .png .jpg .jpeg .svg` y, como descarga, `.xlsx .pdf .csv`.
+  Cualquier otra extensión da 404 (por eso las licencias `.txt` de un paquete no se sirven).
+- Los archivos de paquetes llevan su propia CSP (`config/middleware.py`, `CSP_PAQUETES`) y
+  `Cache-Control: private, max-age=300`. El resto del sitio mantiene la CSP estricta.
+- **Los zips de paquetes nunca van al repositorio** (es público): `.gitignore` excluye `*.zip`.
+  Para probar con el paquete real: `PAQUETE_REAL=C:\ruta\pbg-sde.zip python manage.py test portal`.
 
 ## Mensajes del formulario de contacto
 
@@ -191,5 +238,4 @@ portal con la sesión de superusuario si viene de otra fuente.
 
 ## Pendiente
 
-- **Paso 2:** modelo `Paquete`, carga de zips desde el admin, visor protegido, descargas y tests de permisos por grupo.
 - **Paso 3:** app `cfi_matriz` con base propia.

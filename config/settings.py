@@ -181,8 +181,11 @@ WHITENOISE_ROOT = BASE_DIR / "static_raiz"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = DATA_DIR / "media_publica"
 
-# Paquetes PRIVADOS del portal: nunca se sirven por una URL pública.
+# Paquetes PRIVADOS del portal: nunca se sirven por una URL pública, solo por la
+# vista protegida /portal/ver/ (sesión + grupo).
 PAQUETES_ROOT = DATA_DIR / "paquetes_privados"
+PAQUETE_MAX_BYTES = 50 * 1024 * 1024  # tamaño máximo descomprimido (y del zip subido)
+PAQUETE_MAX_ARCHIVOS = 2000
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
@@ -238,3 +241,5 @@ if "test" in sys.argv:
     LOGGING["root"]["level"] = "CRITICAL"
     LOGGING["loggers"] = {"django": {"level": "CRITICAL"}, "axes": {"level": "CRITICAL"}}
     STATIC_ROOT.mkdir(exist_ok=True)  # evita el aviso "No directory at: staticfiles"
+    # Cifrado rápido SOLO en tests (los usuarios de prueba no son reales).
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
