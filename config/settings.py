@@ -53,7 +53,13 @@ RESPALDO_TOKEN = os.environ.get("RESPALDO_TOKEN", "").strip()
 # Directorio de datos persistentes (disco de Render montado en /var/data).
 # "or": una variable definida pero vacía (DATA_DIR= en el .env) también usa el valor por defecto.
 DATA_DIR = Path(os.environ.get("DATA_DIR") or BASE_DIR / "datos_locales")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    # Durante el build de Render el disco todavía no está montado y /var/data es de
+    # solo lectura. El build (collectstatic) no usa la base, así que se sigue; al
+    # arrancar, el disco ya está montado y la carpeta existe.
+    pass
 
 INSTALLED_APPS = [
     "django.contrib.admin",

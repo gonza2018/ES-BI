@@ -132,3 +132,26 @@ class RespaldoTests(TestCase):
         self.client.force_login(self.admin)
         r = self.client.get("/gestion/diagnostico-ip/", HTTP_X_FORWARDED_FOR="6.6.6.6, 200.1.1.1")
         self.assertContains(r, "IP que usa el bloqueo por intentos fallidos: 200.1.1.1")
+
+
+class BuildSinDiscoTests(TestCase):
+    """Regresión: en el build de Render el disco no está montado (/var/data de solo lectura)."""
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "usa una ruta de /proc, que no admite carpetas")
+    def test_collectstatic_funciona_si_no_se_puede_crear_data_dir(self):
+        import subprocess
+
+        entorno = {
+            **os.environ,
+            "DJANGO_DEBUG": "0",
+            "DJANGO_SECRET_KEY": "prueba-build-abcdefghijklmnopqrstuvwxyz0123456789",
+            "DATA_DIR": "/proc/no_se_puede_crear",
+        }
+        resultado = subprocess.run(
+            [sys.executable, "manage.py", "collectstatic", "--noinput", "--dry-run"],
+            cwd=Path(__file__).resolve().parent.parent,
+            env=entorno,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(resultado.returncode, 0, resultado.stderr[-1500:])
