@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <meta name="description" content="ES & BI: consultoría en estadísticas económicas e inteligencia de negocios. Estudios sectoriales, estimación de agregados macroeconómicos, evaluación de proyectos, encuestas y análisis de datos.">
+    <link rel="canonical" href="{{ URL_BASE }}/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_AR">
+    <meta property="og:site_name" content="ES & BI">
+    <meta property="og:title" content="ES & BI | Estadísticas Económicas e Inteligencia de Negocios">
+    <meta property="og:description" content="Consultoría económica: estudios sectoriales, agregados macroeconómicos, evaluación de proyectos, encuestas y análisis de datos.">
+    <meta property="og:url" content="{{ URL_BASE }}/">
+    <meta property="og:image" content="{{ URL_BASE }}{% static 'sitio/img/og_es_bi.jpg' %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block content %}
+{% include 'sitio/_nav.html' %}
+
+<main id="contenido">
+
+<section class="bg-light seccion" id="inicio">
+    <div class="container px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-lg-5">
+            <div class="col-10 col-sm-8 col-lg-6">
+                <img src="{% static 'sitio/img/consultoria.jpg' %}" class="d-block mx-lg-auto img-fluid rounded"
+                     alt="Profesionales revisando gráficos e informes en una reunión de trabajo" width="850" height="470">
+            </div>
+            <div class="col-lg-6">
+                <h1 class="display-4">ES & BI</h1>
+                <p class="lead fs-3">Estadísticas Económicas e Inteligencia de Negocios</p>
+                <hr class="my-4">
+                <p class="fs-5">Somos una empresa de consultoría económica especializada en estudios sectoriales, estimación y proyección de agregados macroeconómicos y optimización de procesos.</p>
+                <a class="btn btn-primary btn-lg" href="#contacto">Contáctenos</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="seccion" id="nosotros">
+    <div class="container px-4 py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-md-5 text-center">
+                <img src="{% static 'sitio/img/gonzalo.jpg' %}" class="rounded-circle shadow mb-3 foto-perfil"
+                     alt="Gonzalo Sereno" width="250" height="250" loading="lazy">
+                <p class="h5 fw-bold mt-2">Gonzalo Sereno</p>
+                <p class="text-secondary">CEO y fundador de ES & BI</p>
+                <a href="{% url 'sitio:cv' %}" class="btn btn-primary btn-lg">Conóceme</a>
+            </div>
+            <div class="col-md-7">
+                <h2 class="display-5 fw-bold">Quiénes somos</h2>
+                <p class="fs-5 mt-3">En <strong>ES & BI</strong> somos un equipo multidisciplinario de economistas, analistas de datos y consultores con una misión clara: transformar información en decisiones estratégicas.</p>
+                <p class="fs-5">Nos especializamos en estudios sectoriales, proyecciones macroeconómicas y optimización de procesos, brindando soluciones a medida para empresas e instituciones públicas.</p>
+                <p class="fs-5">Nuestra experiencia, combinada con herramientas de inteligencia de negocios, nos permite ofrecer diagnósticos precisos y recomendaciones accionables.</p>
+                <a href="#contacto" class="btn btn-outline-primary btn-lg mt-2">Contáctenos</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-light seccion" id="servicios">
+    <div class="container px-4 py-5">
+        <h2 class="text-center">SERVICIOS</h2>
+        <hr class="mb-5">
+        <div id="carruselServicios" class="carousel slide carrusel-servicios" data-bs-ride="carousel"
+             data-bs-interval="6000" data-bs-pause="hover" aria-label="Servicios">
+            <div class="carousel-inner">
+                {% for grupo in diapositivas %}
+                <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                    <div class="row g-4">
+                        {% for s in grupo %}
+                        <div class="col-md-6">
+                            <article class="card h-100 servicio">
+                                <img src="{% static s.imagen %}" class="card-img-top" alt="{{ s.alt }}" loading="lazy">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="card-title h5">{{ s.titulo }}</h3>
+                                    <p class="card-text">{{ s.resumen }}</p>
+                                    <button type="button" class="btn btn-primary mt-auto align-self-start"
+                                            data-bs-toggle="modal" data-bs-target="#modal-{{ s.id }}">Conocer más</button>
+                                </div>
+                            </article>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carruselServicios" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anteriores</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carruselServicios" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguientes</span>
+            </button>
+            <div class="carousel-indicators">
+                {% for grupo in diapositivas %}
+                <button type="button" data-bs-target="#carruselServicios" data-bs-slide-to="{{ forloop.counter0 }}"
+                        {% if forloop.first %}class="active" aria-current="true"{% endif %}
+                        aria-label="Servicios {{ forloop.counter }} de {{ diapositivas|length }}"></button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% for s in servicios %}
+<div class="modal fade" id="modal-{{ s.id }}" tabindex="-1" aria-labelledby="modal-{{ s.id }}-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title h5" id="modal-{{ s.id }}-titulo">{{ s.titulo }}</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body"><p class="mb-0">{{ s.texto }}</p></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary cerrar-y-contactar" data-servicio="{{ s.titulo }}" data-bs-dismiss="modal">Consultar por este servicio</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver a servicios</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% if proyectos %}
+<section class="seccion" id="proyectos">
+    <div class="container px-4 py-5">
+        <h2 class="text-center">PROYECTOS</h2>
+        <hr class="mb-5">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+            {% for p in proyectos %}
+            <div class="col">
+                <article class="card h-100 proyecto">
+                    {% if p.imagen %}
+                    <img src="{{ p.imagen.url }}" class="card-img-top" alt="{{ p.texto_alternativo }}" loading="lazy">
+                    {% endif %}
+                    <div class="card-body">
+                        <h3 class="card-title h5">{{ p.titulo }}</h3>
+                        <p class="text-secondary mb-2">{{ p.organismo }}, {{ p.anio }}</p>
+                        {% if p.resumen %}<p class="card-text">{{ p.resumen }}</p>{% endif %}
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="bg-light p-4 seccion" id="contacto">
+    <div class="container">
+        <div class="row align-items-center g-lg-5 py-5">
+            <div class="col-lg-6 text-center text-lg-start">
+                <h2 class="display-4 fw-bold lh-1 mb-3">Contáctenos</h2>
+                <p class="col-lg-10 fs-4">Complete el formulario y a la brevedad nos comunicaremos con usted.</p>
+            </div>
+            <div class="col-md-10 mx-auto col-lg-6">
+                <form class="p-4 p-md-5 border rounded-3 bg-white" method="post" action="{% url 'sitio:contacto' %}#contacto" novalidate>
+                    {% csrf_token %}
+                    {% if error_envio %}
+                    <div class="alert alert-danger" role="alert">
+                        No se pudo enviar el mensaje. Intente nuevamente en unos minutos.{% if WHATSAPP_NUMERO %} También puede escribirnos por WhatsApp.{% endif %}
+                    </div>
+                    {% elif form.errors %}
+                    <div class="alert alert-warning" role="alert">Revise los campos marcados.</div>
+                    {% endif %}
+
+                    {% for campo in form %}{% if campo.name != 'sitio_web' %}
+                    <div class="mb-3">
+                        <label for="{{ campo.id_for_label }}" class="form-label">{{ campo.label }}</label>
+                        {{ campo }}
+                        {% for e in campo.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                    </div>
+                    {% endif %}{% endfor %}
+
+                    <div class="campo-trampa" aria-hidden="true">
+                        <label for="{{ form.sitio_web.id_for_label }}">{{ form.sitio_web.label }}</label>
+                        {{ form.sitio_web }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Enviar mensaje</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+
+{% include 'sitio/_footer.html' %}
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'sitio/js/sitio.js' %}" defer></script>{% endblock %}

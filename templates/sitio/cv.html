@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gonzalo Sereno | Consultor en Economía y Datos{% endblock %}
+{% block meta %}
+    <meta name="description" content="Gonzalo Sereno, economista: análisis económico, demografía, automatización de datos y visualización.">
+    <link rel="canonical" href="{{ URL_BASE }}{% url 'sitio:cv' %}">
+    <meta property="og:type" content="profile">
+    <meta property="og:title" content="Gonzalo Sereno | Consultor en Economía y Datos">
+    <meta property="og:url" content="{{ URL_BASE }}{% url 'sitio:cv' %}">
+    <meta property="og:image" content="{{ URL_BASE }}{% static 'sitio/img/og_es_bi.jpg' %}">
+{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'sitio/css/cv.css' %}">{% endblock %}
+{% block body_class %}pagina-cv{% endblock %}
+
+{% block content %}
+{% include 'sitio/_nav.html' %}
+
+<main id="contenido">
+<header class="text-center py-5 cv-intro">
+    <img src="{% static 'sitio/img/gonzalo.jpg' %}" class="rounded-circle shadow mb-4 foto-perfil" alt="Gonzalo Sereno" width="180" height="180">
+    <h1 class="display-5">Hola, soy Gonzalo Sereno</h1>
+    <p class="h2 fw-normal">Soy <span class="texto-rotativo"
+        data-frases="Economista.|Científico de datos.|Consultor en visualización.|Analista geoespacial.">Economista.</span></p>
+    <p class="lead mt-3">Consultor especializado en análisis económico, demografía y visualización de datos.</p>
+    <a href="{% static 'sitio/docs/Gonzalo_Sereno_CV_Resumen.pdf' %}" class="btn btn-primary btn-lg mt-3" download>
+        <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Descargar CV resumido
+    </a>
+</header>
+
+<section class="container py-5 aparecer">
+    <div class="row g-5">
+        <div class="col-md-6">
+            <h2 class="h3">Sobre mí</h2>
+            <p>Economista con pasión por transformar datos en herramientas útiles para la toma de decisiones públicas y privadas. Desarrollo soluciones automatizadas, visualizaciones impactantes y narrativas que acercan la información a todos los públicos.</p>
+        </div>
+        <div class="col-md-6">
+            <h2 class="h3">Áreas de enfoque</h2>
+            <ul>
+                <li>Automatización de flujos de datos</li>
+                <li>Procesamiento con Python, R y RedatamX</li>
+                <li>Visualización avanzada con Power BI y Streamlit</li>
+                <li>Análisis geoespacial con shapefiles y GeoJSON</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="container py-5 aparecer">
+    <h2 class="h3 text-center mb-4">Habilidades técnicas</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 p-3 shadow-sm">
+                <h3 class="h5">Automatización de workflows</h3>
+                <p class="mb-0">Scripts modulares y reproducibles para actualización y verificación de datos.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-3 shadow-sm">
+                <h3 class="h5">Visualización geoespacial</h3>
+                <p class="mb-0">Mapas interactivos con GeoPandas, Folium y técnicas avanzadas de Leaflet.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-3 shadow-sm">
+                <h3 class="h5">Dashboards interactivos</h3>
+                <p class="mb-0">Diseño de paneles con Streamlit y Power BI para contar historias con datos.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container py-5 aparecer">
+    <h2 class="h3 text-center mb-4">Indicadores económicos destacados</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4 shadow-sm">
+                <h3 class="h5 mb-3"><i class="fa-solid fa-chart-column text-primary" aria-hidden="true"></i> PBG Santiago del Estero</h3>
+                <p>Estimación integral del Producto Bruto Geográfico provincial. Herramienta clave para el análisis económico territorial.</p>
+                <hr>
+                <h3 class="h5 mb-3"><i class="fa-solid fa-chart-line text-primary" aria-hidden="true"></i> ITAE (Índice de Actividad Económica)</h3>
+                <p>Serie mensual que mide la evolución de la actividad económica con indicadores sintéticos y comparables.</p>
+                <p class="mt-2 mb-0 text-secondary"><em>Próximamente se habilitará una descarga con los principales hallazgos.</em></p>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+
+{% include 'sitio/_footer.html' %}
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'sitio/js/cv.js' %}" defer></script>{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Mensaje enviado | ES & BI{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+{% include 'sitio/_nav.html' %}
+<main id="contenido" class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-success">
+                <div class="card-body text-center p-4">
+                    <h1 class="h3"><i class="fas fa-check-circle text-success" aria-hidden="true"></i> Mensaje enviado</h1>
+                    <p class="card-text">Recibimos su mensaje. Le responderemos a la brevedad al correo que indicó.</p>
+                    <a href="{% url 'sitio:inicio' %}" class="btn btn-success mt-3">Volver al inicio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'portal/base_portal.html' %}
+{% block title %}Acceso bloqueado | Portal ES & BI{% endblock %}
+{% block portal %}
+<div class="portal-login mx-auto">
+    <div class="alert alert-danger" role="alert">
+        <h1 class="h5">Acceso bloqueado temporalmente</h1>
+        <p class="mb-0">Hubo demasiados intentos fallidos de ingreso. Espere una hora y vuelva a intentar, o pida que le restablezcan la contraseña.</p>
+    </div>
+</div>
+{% endblock %}

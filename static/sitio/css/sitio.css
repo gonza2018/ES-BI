@@ -1,0 +1,56 @@
+/* Ajustes propios sobre Bootstrap. Mantiene la estética original del sitio. */
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* Que el menú fijo no tape el título al saltar a una sección */
+.seccion { scroll-margin-top: 64px; }
+
+.saltar-contenido {
+    position: absolute; top: .5rem; left: .5rem; z-index: 2000;
+    background: #fff; padding: .5rem 1rem; border-radius: .25rem;
+}
+
+.acceso-clientes { font-size: .875rem; opacity: .8; }
+.acceso-clientes:hover, .acceso-clientes:focus { opacity: 1; }
+
+.servicio .card-img-top,
+.proyecto .card-img-top { aspect-ratio: 3 / 2; height: auto; object-fit: cover; }
+
+/* Campo anti-spam: fuera de la vista, pero no con display:none */
+.campo-trampa { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+.whatsapp-float {
+    position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+    font-size: 50px; color: #25d366; line-height: 1;
+}
+.whatsapp-float:hover { color: #1ebe5a; }
+
+.social-icon { color: darkseagreen; font-size: 40px; }
+.social-icon:hover { color: chartreuse; }
+
+.custom-hr { border-color: #6c757d; }
+
+a:focus-visible, button:focus-visible, .form-control:focus-visible {
+    outline: 3px solid #0d6efd; outline-offset: 2px;
+}
+
+/* --- Portal --- */
+.portal-body { background: #f4f6f8; min-height: 100vh; }
+.portal-login { max-width: 420px; }
+
+/* --- Quiénes somos --- */
+.foto-perfil { width: 250px; max-width: 70%; height: auto; aspect-ratio: 1; object-fit: cover; }
+
+/* --- Carrusel de servicios --- */
+.carrusel-servicios { padding: 0 3rem; }
+.carrusel-servicios .carousel-control-prev,
+.carrusel-servicios .carousel-control-next { width: 2.5rem; }
+.carrusel-servicios .carousel-control-prev-icon,
+.carrusel-servicios .carousel-control-next-icon {
+    background-color: #212529; border-radius: 50%; background-size: 55%;
+    width: 2.25rem; height: 2.25rem;
+}
+.carrusel-servicios .carousel-indicators { position: static; margin: 1.5rem 0 0; }
+.carrusel-servicios .carousel-indicators [data-bs-target] { background-color: #212529; }
+@media (max-width: 575.98px) { .carrusel-servicios { padding: 0 2.25rem; } }
