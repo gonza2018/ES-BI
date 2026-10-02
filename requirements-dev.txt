@@ -1,0 +1,5 @@
+# Solo para desarrollo: los tests usan estas librerías para leer la carta PDF y
+# decodificar el QR. Sin ellas, esos tests se omiten (no hacen falta en Render).
+-r requirements.txt
+pypdf==5.9.0
+zxing-cpp

@@ -15,3 +15,9 @@ paquetes_privados/
 *.sqlite3-*
 .DS_Store
 Thumbs.db
+
+# Paquetes de dashboards: material privado de organismos. NUNCA al repositorio (es público).
+*.zip
+
+# Firma manuscrita: privada. Se sube desde /gestion/firma/ al disco de datos.
+firma.png

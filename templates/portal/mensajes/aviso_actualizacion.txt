@@ -1,0 +1,12 @@
+{% autoescape off %}{{ usuario.destinatario }}:
+
+Le informo que se encuentra disponible una actualización del tablero «{{ paquete.titulo }}» (versión {{ paquete.version }}).
+{% if paquete.novedades %}
+{{ paquete.novedades }}
+{% endif %}
+Puede consultarla en: {{ enlace }}
+
+Saludos cordiales.
+
+{{ firma_nombre }}
+{{ firma_matricula }}{% endautoescape %}

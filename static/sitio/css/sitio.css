@@ -54,3 +54,12 @@ a:focus-visible, button:focus-visible, .form-control:focus-visible {
 .carrusel-servicios .carousel-indicators { position: static; margin: 1.5rem 0 0; }
 .carrusel-servicios .carousel-indicators [data-bs-target] { background-color: #212529; }
 @media (max-width: 575.98px) { .carrusel-servicios { padding: 0 2.25rem; } }
+
+/* --- Portal: grilla y visor de paquetes --- */
+.tarjeta-paquete .miniatura { aspect-ratio: 1200 / 630; height: auto; object-fit: cover; background: #e9ecef; }
+.tarjeta-paquete .miniatura-vacia { color: #adb5bd; }
+.tarjeta-paquete { transition: box-shadow .2s ease; }
+.tarjeta-paquete:hover { box-shadow: 0 .5rem 1rem rgba(0,0,0,.12) !important; }
+.visor-marco { background: #fff; border: 1px solid #dee2e6; border-radius: .5rem; overflow: hidden; }
+.visor { display: block; width: 100%; height: calc(100vh - 140px); min-height: 560px; border: 0; }
+.visor:fullscreen { height: 100%; }

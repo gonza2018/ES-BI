@@ -30,6 +30,8 @@ def crear_respaldo():
             with closing(sqlite3.connect(db)) as origen, closing(sqlite3.connect(copia)) as dest:
                 origen.backup(dest)
             tar.add(copia, arcname=f"bases/{db.name}")
+        if Path(settings.FIRMA_ARCHIVO).is_file():
+            tar.add(settings.FIRMA_ARCHIVO, arcname="firma.png")
         for carpeta in ("media_publica", "paquetes_privados"):
             ruta = data_dir / carpeta
             if ruta.exists():

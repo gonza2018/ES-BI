@@ -1,0 +1,52 @@
+{% extends 'portal/base_portal.html' %}
+{% load static %}
+{% block title %}{{ paquete.titulo }} | Portal ES & BI{% endblock %}
+{% block portal %}
+<nav aria-label="Ruta" class="mb-3 small"><a href="{% url 'portal:inicio' %}">← Mis tableros</a></nav>
+
+<header class="d-flex flex-wrap align-items-start gap-3 mb-3">
+    <div class="me-auto">
+        {% if not user.is_staff %}<p class="text-secondary small mb-1">Tablero preparado para {{ user.destinatario }}</p>{% endif %}
+        <h1 class="h3 mb-1">{{ paquete.titulo }}</h1>
+        <div class="d-flex flex-wrap gap-2 align-items-center small text-secondary">
+            {% include 'portal/_estado.html' %}
+            {% if paquete.organismo %}<span>{{ paquete.organismo }}</span>{% endif %}
+            {% if paquete.version %}<span>· Versión {{ paquete.version }}</span>{% endif %}
+            {% if paquete.fecha %}<span>· {{ paquete.fecha|date:"d/m/Y" }}</span>{% endif %}
+        </div>
+        {% if paquete.descripcion %}<p class="mt-2 mb-0">{{ paquete.descripcion }}</p>{% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary" id="pantalla-completa">
+            <i class="fa-solid fa-expand" aria-hidden="true"></i> Pantalla completa
+        </button>
+        <a class="btn btn-outline-secondary" href="{% url 'portal:ver_indice' paquete.slug %}" target="_blank" rel="noopener">
+            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Abrir en pestaña nueva
+        </a>
+        <form method="post" action="{% url 'portal:logout' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger">Cerrar sesión</button>
+        </form>
+    </div>
+</header>
+
+{% if descargas %}
+<section class="mb-3" aria-label="Descargas">
+    <h2 class="h6 text-secondary mb-2">Descargas</h2>
+    <div class="d-flex flex-wrap gap-2">
+        {% for nombre, ruta, tamano in descargas %}
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'portal:ver_archivo' paquete.slug ruta %}">
+            <i class="fa-solid {% if nombre|lower|slice:'-4:' == '.pdf' %}fa-file-pdf{% elif nombre|lower|slice:'-4:' == '.csv' %}fa-file-csv{% else %}fa-file-excel{% endif %}" aria-hidden="true"></i>
+            {{ nombre }} <span class="text-secondary">({{ tamano|filesizeformat }})</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<div class="visor-marco">
+    <iframe id="visor" class="visor" src="{% url 'portal:ver_indice' paquete.slug %}"
+            title="{{ paquete.titulo }}" allow="fullscreen" allowfullscreen></iframe>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'portal/js/visor.js' %}" defer></script>{% endblock %}

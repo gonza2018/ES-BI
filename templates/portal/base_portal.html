@@ -11,7 +11,7 @@
         </a>
         {% if user.is_authenticated %}
         <div class="d-flex align-items-center gap-3">
-            <span class="text-light small d-none d-sm-inline">{{ user.email }}</span>
+            <span class="text-light small d-none d-sm-inline">{{ user.destinatario }}</span>
             <form method="post" action="{% url 'portal:logout' %}" class="m-0">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
@@ -22,7 +22,7 @@
         {% endif %}
     </div>
 </nav>
-<main id="contenido" class="container py-5">
+<main id="contenido" class="container-xxl py-4">
     {% block portal %}{% endblock %}
 </main>
 {% endblock %}

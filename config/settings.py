@@ -181,8 +181,11 @@ WHITENOISE_ROOT = BASE_DIR / "static_raiz"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = DATA_DIR / "media_publica"
 
-# Paquetes PRIVADOS del portal: nunca se sirven por una URL pública.
+# Paquetes PRIVADOS del portal: nunca se sirven por una URL pública, solo por la
+# vista protegida /portal/ver/ (sesión + grupo).
 PAQUETES_ROOT = DATA_DIR / "paquetes_privados"
+PAQUETE_MAX_BYTES = 50 * 1024 * 1024  # tamaño máximo descomprimido (y del zip subido)
+PAQUETE_MAX_ARCHIVOS = 2000
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
@@ -202,6 +205,15 @@ CONTACTO_DESTINATARIOS = env_list("CONTACTO_DESTINATARIOS", EMAIL_HOST_USER)
 # WhatsApp del sitio: solo dígitos, con código de país (ej. 5493851234567).
 # Vacío = no se muestran los botones de WhatsApp.
 WHATSAPP_NUMERO = "".join(c for c in os.environ.get("WHATSAPP_NUMERO", "") if c.isdigit())
+# Firma de cartas, correos y avisos (el remitente es siempre la firma, sin logos).
+FIRMA_NOMBRE = os.environ.get("FIRMA_NOMBRE", "Lic. en Economía Gonzalo Javier Sereno")
+FIRMA_MATRICULA = os.environ.get("FIRMA_MATRICULA", "CPCESE M. 22")
+CARTA_CIUDAD = os.environ.get("CARTA_CIUDAD", "Santiago del Estero")
+# Firma manuscrita para la carta PDF. PRIVADA: vive en el disco de datos (nunca en static/
+# ni en el repositorio, que son públicos). Se sube desde /gestion/firma/.
+FIRMA_ARCHIVO = Path(os.environ.get("FIRMA_ARCHIVO") or DATA_DIR / "firma.png")
+# Días para crear la contraseña con el enlace de la carta (después vence).
+ACCESO_VIGENCIA_DIAS = 7
 # Si está definida, el formulario envía por Formspree (HTTPS) en lugar de SMTP.
 FORMSPREE_ID = os.environ.get("FORMSPREE_ID", "").strip()
 
@@ -238,3 +250,5 @@ if "test" in sys.argv:
     LOGGING["root"]["level"] = "CRITICAL"
     LOGGING["loggers"] = {"django": {"level": "CRITICAL"}, "axes": {"level": "CRITICAL"}}
     STATIC_ROOT.mkdir(exist_ok=True)  # evita el aviso "No directory at: staticfiles"
+    # Cifrado rápido SOLO en tests (los usuarios de prueba no son reales).
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]

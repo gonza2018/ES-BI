@@ -6,7 +6,7 @@ Sitio institucional de ES & BI y portal privado de clientes (`/portal/`), en Dja
 |---|---|
 | `cuentas` | Usuario con **correo como identificador** (sin username). |
 | `sitio` | Web pública: inicio, quiénes somos, servicios (carrusel con ventanas "Conocer más"), proyectos, contacto, página personal `/cv/`, `robots.txt`, `sitemap.xml`. |
-| `portal` | Login por correo y contraseña, protección contra fuerza bruta (django-axes). Paso 2: paquetes de dashboards. |
+| `portal` | Login por correo y contraseña, protección contra fuerza bruta (django-axes) y **paquetes** (dashboards y sitios estáticos) privados por organismo. |
 | `cfi_matriz` | *(Paso 3, pendiente)* App de carga de datos del CFI, con base propia. |
 
 El admin está en **`/gestion/`** (no en `/admin/`).
@@ -24,12 +24,14 @@ El admin está en **`/gestion/`** (no en `/admin/`).
 | `DATA_DIR` | `/var/data` | Punto de montaje del disco persistente: bases, archivos subidos y respaldos. |
 | `WHATSAPP_NUMERO` | ej. `5493851234567` | Solo dígitos, con código de país (54), 9 y característica sin 0 ni 15. Vacía = sin botones de WhatsApp. |
 | `FORMSPREE_ID` | `movwnndw` | Si está definida, el formulario envía por **Formspree** (HTTPS) y no usa SMTP. Funciona también en el plan free. |
-| `EMAIL_HOST_USER` | tu cuenta de Gmail | Solo si no se usa Formspree. |
-| `EMAIL_HOST_PASSWORD` | contraseña de aplicación | Solo si no se usa Formspree. |
+| `EMAIL_HOST_USER` | tu cuenta de Gmail | Necesaria para **avisos por correo a clientes** (Formspree solo te escribe a vos). |
+| `EMAIL_HOST_PASSWORD` | contraseña de aplicación de Gmail | Ídem. Sin estas dos, los avisos por correo quedan pendientes con un botón para enviarlos desde tu programa de correo. |
+| `FIRMA_NOMBRE`, `FIRMA_MATRICULA` | (tienen valor por defecto) | Firma de cartas, avisos y correos. |
 | `DEFAULT_FROM_EMAIL` | igual a `EMAIL_HOST_USER` | Remitente de los correos del sitio. |
 | `CONTACTO_DESTINATARIOS` | uno o varios correos, separados por coma | Quién recibe los mensajes del formulario. |
 | `IP_CLIENTE_ENCABEZADO` | `HTTP_X_FORWARDED_FOR` (defecto) | De dónde sale la IP real del visitante. Confirmar con `/gestion/diagnostico-ip/`. |
 | `IP_CLIENTE_PROXIES` | `1` (defecto) | Cuántas IPs contar desde la derecha en `X-Forwarded-For`. |
+| `CONTACTO_DESTINATARIOS` | `gserelic@gmail.com` | Recibe la confirmación de cada paquete subido. |
 | `RESPALDO_TOKEN` | 40+ caracteres aleatorios | Permite que el script de Windows descargue respaldos. Vacío = deshabilitado. |
 | `SECURE_HSTS_SECONDS` | `3600` al principio | Subir a `31536000` (1 año) cuando todo esté verificado. |
 
@@ -111,17 +113,111 @@ El sitio redirige `gserelic.com` → `https://www.gserelic.com`.
 **Primer usuario administrador:** en Render → *Shell*: `python manage.py createsuperuser`, o bien definir
 `DJANGO_SUPERUSER_EMAIL` y `DJANGO_SUPERUSER_PASSWORD` y redeployar (después borrar esas dos variables).
 
-## Usuarios y grupos
+## Portal: grupos, usuarios y paquetes
 
-No hay registro público. Todo se hace en `/gestion/`:
+Todo se hace en `/gestion/`. La regla es simple: **cada organismo es un grupo**; un usuario ve
+los paquetes de sus grupos; el superusuario ve todo.
 
-1. **Grupos** → *Agregar*: uno por organismo (por ejemplo `DGEyC SDE`, `CFI`).
-2. **Usuarios** → *Agregar*: correo, nombre, organismo, contraseña y grupo(s).
-3. Para quitar el acceso, desmarcar **Activo** (no borrar: se pierde el registro de último acceso).
-4. La columna **last login** muestra cuándo entró cada usuario por última vez.
+### Crear un grupo (uno por organismo)
+*Autenticación y autorización* → **Grupos** → *Agregar*. Nombre, por ejemplo `DGEyC SDE` o `CFI`.
+No hace falta marcar permisos: los grupos solo se usan para decidir quién ve cada paquete.
 
-Si alguien queda bloqueado por intentos fallidos (5 intentos → 1 hora), se puede liberar en
-*Axes → Access attempts* borrando su registro, o con `python manage.py axes_reset`.
+> Truco: si el nombre del grupo es **igual** al `organismo` de `meta.json` (sin importar mayúsculas),
+> el paquete se le asigna solo la primera vez que se sube. `pbg-sde` trae
+> `"organismo": "DGEyC Santiago del Estero"`; si el grupo se llama `DGEyC SDE`, hay que asignarlo a mano.
+
+### Alta de un cliente y carta de acceso
+1. *Cuentas de usuario* → **Usuarios** → *Agregar*: correo (identificador interno: la persona no lo
+   escribe para entrar la primera vez), **tratamiento** (lista: Sr., Sra., Lic., Ing., Arq., Cr., Cra., Dr.,
+   Dra., Mg., Prof.; o **Otro…** para escribir uno), **nombre completo** (nombre y apellido), organismo,
+   **celular** si lo tenés (formato `+5493854123456`, para avisos por WhatsApp) y su **grupo**.
+   **Sin contraseña**: la crea la persona.
+2. En su ficha: **Generar carta de acceso** → elegir el tablero → *Generar y descargar PDF*.
+   Se descarga `Acceso_<tablero>_<apellido>.pdf` con su enlace personal y el código QR.
+3. **Mandá el PDF vos**, desde tu correo. El sistema no lo envía.
+
+**Cómo se nombra a la persona** (una sola regla en todos los textos): con tratamiento, "Cra. María Pérez";
+sin tratamiento, "María Pérez". Los textos son neutros en género: "Le damos la bienvenida, …",
+"Tablero preparado para …", y el aviso empieza con "Cra. María Pérez:". Abogados y médicos: Dr./Dra.;
+contadores: Cr./Cra.
+
+Cómo funciona el enlace (`/portal/acceso/<token>/<tablero>/`):
+- **Primera vez:** "Le damos la bienvenida, Lic. …" → crea su contraseña (10+ caracteres) → entra directo al tablero.
+  Tiene **7 días** para hacerlo; después el enlace vence y hay que generar otra carta.
+- **Siguientes veces:** "Lic. …, ingrese su contraseña." El mismo enlace pide **solo la contraseña**. 5 errores → bloqueo de 1 hora (igual que el login general).
+- **Olvidó la contraseña:** generale otra carta marcando **Restablecer la contraseña**. Eso borra la anterior,
+  cierra sus sesiones y anula el enlace viejo.
+- **Otro tablero para alguien que ya tiene contraseña:** otra carta *sin* marcar Restablecer: entra con la misma
+  contraseña. Ojo: cada carta nueva anula el enlace de la anterior (desde el portal ve todos sus tableros igual).
+- En la base solo se guarda una huella (SHA-256) del enlace, nunca el enlace. **Si perdés el PDF, generá otro.**
+- No se generan cartas para cuentas con acceso al panel (la tuya incluida): se les borraría la contraseña.
+- Las direcciones de acceso quedan en los registros (*Logs*) de Render, que solo ves vos.
+- El login general (`/portal/ingresar/`, correo + contraseña) sigue funcionando para todos.
+
+Quitar el acceso: desmarcar **Activo** (no borrar: se pierde el registro de último acceso). La columna
+**last login** muestra cuándo entró; **contraseña creada** si ya usó la carta.
+Bloqueado por intentos fallidos: *Axes → Access attempts* → borrar su registro, o `python manage.py axes_reset`.
+
+### Subir un paquete nuevo
+*Portal de clientes* → **Paquetes** → **Subir paquete (.zip)** → elegir el zip → *Subir y publicar*.
+
+El sistema controla que tenga `index.html` y `meta.json`, que no haya rutas con `..`, rutas absolutas
+ni enlaces simbólicos, que no pese más de 50 MB descomprimido y que no traiga archivos ejecutables de
+servidor (`.py`, `.php`, `.sh`…). Si algo falla, lo dice y no guarda nada.
+
+Después de subirlo, en su ficha: **Grupos con acceso** → pasar el grupo a la derecha → *Guardar*.
+Hasta que tenga un grupo, solo lo ve el superusuario.
+
+### Actualizar un paquete (versión nueva)
+Subir el zip nuevo igual que arriba (o desde la ficha: **Subir nueva versión (.zip)**). Si el `slug`
+de `meta.json` ya existe, se publica la versión nueva y **la anterior queda en el historial** (abajo
+en la ficha). Los grupos asignados se conservan. `meta.json` manda: título, estado, versión, fecha y
+descripción se actualizan con lo que traiga.
+
+**Avisar a los clientes:** al subir la versión nueva, marcá **Notificar a los usuarios asignados**.
+Se arma un aviso por cada usuario activo de los grupos del tablero (no administradores):
+- **con celular → WhatsApp:** en *Avisos de actualización*, botón **Enviar por WhatsApp**: abre tu WhatsApp con el
+  mensaje escrito; vos tocás enviar. Se registra el clic (WhatsApp no confirma lectura).
+- **sin celular → correo automático** desde tu Gmail (requiere `EMAIL_HOST_USER` y `EMAIL_HOST_PASSWORD`).
+  Sin esas variables, queda pendiente con un botón **Enviar por correo** que abre tu programa de correo.
+- Acciones: *Marcar como enviado* y *Reintentar el correo*.
+- El aviso lleva el enlace del visor (`/portal/tablero/<tablero>/`), **nunca** el enlace personal: si la persona no
+  tiene sesión abierta, el portal le pide el ingreso.
+- No se usa ninguna automatización de WhatsApp ni la API de WhatsApp Business (términos de uso y costo).
+
+**Confirmación para vos:** cada vez que subís un paquete (nuevo o versión) te llega un correo
+"Tablero disponible: …" a `CONTACTO_DESTINATARIOS` (por SMTP, o por Formspree si no hay SMTP).
+Si falla, la carga igual se completa y el panel lo avisa.
+
+**Textos editables** (cartas, avisos, confirmación): `templates/portal/mensajes/*.txt`.
+**Firma manuscrita** (solo en la carta PDF, 4,5 cm de ancho, sobre el nombre): se sube en
+**`/gestion/firma/`** (solo superusuario), PNG con fondo transparente. Se guarda en el disco privado
+(`DATA_DIR/firma.png`): **nunca en `static/` ni en el repositorio**, que son públicos. Entra en los respaldos.
+Si no hay firma cargada, la carta sale solo con el texto. En tu PC, para probar: copiala a `datos_locales\firma.png`.
+**Dentro de cada PDF va una copia degradada a propósito** (220 px de ancho, unos 125 ppp; sin transparencia, sobre
+fondo blanco; JPEG comprimido): se ve bien en la carta, pero si alguien la extrae del PDF no sirve para pegarla
+en otro documento. El original solo queda en el disco privado. Ajustable en `portal/carta.py`
+(`FIRMA_PDF_ANCHO_PX`, `FIRMA_PDF_CALIDAD_JPEG`).
+
+**Volver a una versión anterior:** *Versiones de paquetes* → tildar la versión → acción
+*Volver a esta versión* → *Ir*.
+
+### Despublicar, cambiar estado o borrar
+- **Despublicar** (ocultarlo sin borrarlo): en la ficha, desmarcar **Publicado**; o en la lista,
+  tildar y elegir la acción *Despublicar*. El superusuario lo sigue viendo, con la etiqueta *No publicado*.
+- **Cambiar el estado** (borrador / en revisión / aprobado) sin subir otro zip: campo **Estado** en la ficha.
+- **Borrar**: botón *Eliminar* de la ficha. Borra también sus archivos del disco (todas las versiones).
+
+### Cómo se sirve (para la próxima persona que toque el código)
+- `/portal/` grilla · `/portal/tablero/<slug>/` página con el iframe, descargas y pantalla completa ·
+  `/portal/ver/<slug>/` y `/portal/ver/<slug>/<ruta>` archivos del paquete.
+- Cada archivo pasa por la vista protegida: sin sesión → login; grupo incorrecto → 404 (no revela que existe).
+- Solo se sirven `.html .js .css .json .woff2 .png .jpg .jpeg .svg` y, como descarga, `.xlsx .pdf .csv`.
+  Cualquier otra extensión da 404 (por eso las licencias `.txt` de un paquete no se sirven).
+- Los archivos de paquetes llevan su propia CSP (`config/middleware.py`, `CSP_PAQUETES`) y
+  `Cache-Control: private, max-age=300`. El resto del sitio mantiene la CSP estricta.
+- **Los zips de paquetes nunca van al repositorio** (es público): `.gitignore` excluye `*.zip`.
+  Para probar con el paquete real: `PAQUETE_REAL=C:\ruta\pbg-sde.zip python manage.py test portal`.
 
 ## Mensajes del formulario de contacto
 
@@ -169,6 +265,9 @@ histórico, y vive en la misma plataforma.
 Además, `python manage.py respaldar` (desde *Shell* en Render) crea el mismo archivo en
 `DATA_DIR/respaldos/` y conserva los 5 últimos. Ese queda en el mismo disco: no reemplaza la copia externa.
 
+**El respaldo contiene datos personales** (correos y celulares de clientes, Ley 25.326): tratalo como
+confidencial y no lo guardes en carpetas compartidas ni sincronizadas con otras personas.
+
 **Restaurar:** descomprimir el `.tar.gz`; `bases/db.sqlite3` va a `DATA_DIR/`, y `media_publica/` y
 `paquetes_privados/` a `DATA_DIR/` con el mismo nombre.
 
@@ -191,5 +290,4 @@ portal con la sesión de superusuario si viene de otra fuente.
 
 ## Pendiente
 
-- **Paso 2:** modelo `Paquete`, carga de zips desde el admin, visor protegido, descargas y tests de permisos por grupo.
 - **Paso 3:** app `cfi_matriz` con base propia.
