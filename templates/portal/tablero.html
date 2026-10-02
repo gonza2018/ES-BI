@@ -6,6 +6,7 @@
 
 <header class="d-flex flex-wrap align-items-start gap-3 mb-3">
     <div class="me-auto">
+        {% if not user.is_staff %}<p class="text-secondary small mb-1">Tablero preparado para {{ user.destinatario }}</p>{% endif %}
         <h1 class="h3 mb-1">{{ paquete.titulo }}</h1>
         <div class="d-flex flex-wrap gap-2 align-items-center small text-secondary">
             {% include 'portal/_estado.html' %}
@@ -22,6 +23,10 @@
         <a class="btn btn-outline-secondary" href="{% url 'portal:ver_indice' paquete.slug %}" target="_blank" rel="noopener">
             <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Abrir en pestaña nueva
         </a>
+        <form method="post" action="{% url 'portal:logout' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger">Cerrar sesión</button>
+        </form>
     </div>
 </header>
 

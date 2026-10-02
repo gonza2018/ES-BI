@@ -1,0 +1,11 @@
+{% autoescape off %}De mi mayor consideración:
+
+Tengo el agrado de dirigirme a usted a fin de poner a su disposición el tablero «{{ paquete.titulo }}», elaborado para su revisión.
+
+{{ paquete.resumen|default:paquete.descripcion }}
+
+[[ENLACE]]
+
+Al ingresar por primera vez se le solicitará crear una contraseña personal. Le sugiero guardarla por escrito. En caso de olvido, podrá solicitarme un nuevo enlace. El enlace es personal: le pido no reenviarlo.
+
+Sin otro particular, saludo a usted atentamente.{% endautoescape %}

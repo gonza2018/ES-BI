@@ -18,6 +18,8 @@ class Paquete(models.Model):
     tipo = models.CharField("tipo", max_length=20, choices=TIPOS, default="dashboard")
     organismo = models.CharField("organismo", max_length=200, blank=True)
     descripcion = models.TextField("descripción", blank=True)
+    resumen = models.TextField("resumen", blank=True, help_text="Párrafo formal para la carta y la confirmación.")
+    novedades = models.TextField("novedades de esta versión", blank=True)
     version = models.CharField("versión", max_length=40, blank=True)
     fecha = models.DateField("fecha", null=True, blank=True)
     estado = models.CharField("estado", max_length=20, choices=ESTADOS, default="borrador")
@@ -110,6 +112,54 @@ class VersionPaquete(models.Model):
     @property
     def es_actual(self):
         return self.paquete.version_actual_id == self.pk
+
+
+class AccesoPersonal(models.Model):
+    """Enlace personal de la carta de acceso. Uno vigente por usuario.
+
+    Se guarda SOLO el hash SHA-256 del token: el token en claro existe únicamente en
+    la carta PDF. Generar una carta nueva reemplaza este registro (el enlace anterior
+    deja de funcionar).
+    """
+
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="acceso_personal")
+    token_hash = models.CharField("hash del token", max_length=64, unique=True)
+    paquete = models.ForeignKey(Paquete, verbose_name="paquete de la carta", null=True, on_delete=models.SET_NULL)
+    creado = models.DateTimeField("carta generada", auto_now_add=True)
+    ultimo_uso = models.DateTimeField("último ingreso con el enlace", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "enlace personal"
+        verbose_name_plural = "enlaces personales"
+
+    def __str__(self):
+        return f"Enlace de {self.usuario}"
+
+
+class Aviso(models.Model):
+    """Aviso de actualización a un usuario (WhatsApp manual o correo)."""
+
+    MEDIOS = [("whatsapp", "WhatsApp"), ("correo", "Correo")]
+    ESTADOS = [("pendiente", "Pendiente"), ("enviado", "Enviado"), ("error", "Error")]
+
+    paquete = models.ForeignKey(Paquete, on_delete=models.CASCADE, related_name="avisos")
+    version = models.ForeignKey(VersionPaquete, null=True, on_delete=models.SET_NULL, related_name="avisos")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="avisos")
+    medio = models.CharField("medio", max_length=10, choices=MEDIOS)
+    estado = models.CharField("estado", max_length=10, choices=ESTADOS, default="pendiente")
+    asunto = models.CharField("asunto", max_length=200)
+    mensaje = models.TextField("mensaje")
+    creado = models.DateTimeField("creado", auto_now_add=True)
+    enviado = models.DateTimeField("enviado", null=True, blank=True)
+    detalle = models.TextField("detalle", blank=True)
+
+    class Meta:
+        verbose_name = "aviso de actualización"
+        verbose_name_plural = "avisos de actualización"
+        ordering = ["estado", "-creado"]
+
+    def __str__(self):
+        return f"{self.get_medio_display()} a {self.usuario} ({self.paquete.slug})"
 
 
 def _borrar_carpeta(ruta):

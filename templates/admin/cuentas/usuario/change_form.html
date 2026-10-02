@@ -1,0 +1,7 @@
+{% extends "admin/change_form.html" %}
+{% block object-tools-items %}
+{% if original and not original.is_staff %}
+<li><a href="{% url 'admin:cuentas_usuario_carta' original.pk %}" class="addlink">Generar carta de acceso</a></li>
+{% endif %}
+{{ block.super }}
+{% endblock %}

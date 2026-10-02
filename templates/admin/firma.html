@@ -1,0 +1,31 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a> &rsaquo; Firma de la carta</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  <p>La firma manuscrita se usa <strong>solo en la carta de acceso en PDF</strong>, sobre el nombre, con 4,5 cm de ancho.
+  Se guarda en el disco privado del servidor: no es accesible desde internet ni está en el repositorio.</p>
+  {% if hay_firma %}
+    <h2>Firma actual</h2>
+    <p><img src="{% url 'firma_imagen' %}" alt="Firma actual" style="max-width:340px;background:#fff;border:1px solid #ccc;padding:8px"></p>
+    <form method="post">{% csrf_token %}<input type="hidden" name="accion" value="quitar">
+      <input type="submit" value="Quitar la firma" class="deletelink">
+    </form>
+    <h2>Reemplazarla</h2>
+  {% else %}
+    <p><strong>Todavía no hay firma cargada</strong>: las cartas salen solo con el texto
+    «Lic. en Economía Gonzalo Javier Sereno / CPCESE M. 22».</p>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <fieldset class="module aligned">
+      <div class="form-row"><div class="flex-container">
+        <label for="id_archivo">Imagen PNG:</label>
+        <input type="file" name="archivo" id="id_archivo" accept="image/png">
+      </div><div class="help">PNG con fondo transparente, hasta 1 MB.</div></div>
+    </fieldset>
+    <div class="submit-row"><input type="submit" value="Guardar firma" class="default"></div>
+  </form>
+</div>
+{% endblock %}

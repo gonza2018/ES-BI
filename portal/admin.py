@@ -1,11 +1,14 @@
 from django.contrib import admin, messages
+from django.http import HttpResponseRedirect
+from django.utils import timezone
 from django.shortcuts import redirect, render
 from django.template.defaultfilters import filesizeformat
 from django.urls import path, reverse
 from django.utils.html import format_html
 
 from .forms import SubirPaqueteForm
-from .models import Paquete, VersionPaquete
+from .accesos import confirmar_carga, crear_avisos, enviar_aviso_correo, url_mailto, url_whatsapp
+from .models import Aviso, Paquete, VersionPaquete
 from .paquetes import PaqueteInvalido, activar_version, instalar
 
 
@@ -40,7 +43,7 @@ class PaqueteAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("titulo", "slug", "ver_en_portal")}),
         ("Acceso", {"fields": ("grupos", "publicado")}),
-        ("Datos (vienen de meta.json)", {"fields": ("estado", "descripcion", "tipo", "organismo", "version", "fecha")}),
+        ("Datos (vienen de meta.json)", {"fields": ("estado", "descripcion", "resumen", "novedades", "tipo", "organismo", "version", "fecha")}),
         ("Registro", {"classes": ("collapse",), "fields": ("creado", "actualizado")}),
     )
     inlines = [VersionPaqueteInline]
@@ -81,6 +84,30 @@ class PaqueteAdmin(admin.ModelAdmin):
             except PaqueteInvalido as error:
                 form.add_error("archivo", str(error))
             else:
+                # Confirmación para Gonzalo. Si el correo falla, la carga igual queda hecha.
+                try:
+                    confirmar_carga(request, paquete, es_actualizacion=not creado)
+                except Exception:
+                    import logging
+
+                    logging.getLogger(__name__).exception("Falló la confirmación de carga de %s", paquete.slug)
+                    messages.warning(request, "El paquete se cargó, pero no se pudo enviar el correo de confirmación.")
+                if form.cleaned_data["notificar"] and not creado:
+                    avisos = crear_avisos(request, paquete)
+                    correos = sum(1 for a in avisos if a.medio == "correo" and a.estado == "enviado")
+                    wsp = sum(1 for a in avisos if a.medio == "whatsapp")
+                    pendientes = sum(1 for a in avisos if a.estado != "enviado")
+                    messages.info(
+                        request,
+                        f"Avisos: {len(avisos)} ({correos} correos enviados, {wsp} por WhatsApp para enviar con un clic). "
+                        f"Pendientes: {pendientes}.",
+                    )
+                    if avisos:
+                        return redirect(
+                            reverse("admin:portal_aviso_changelist") + f"?paquete__id__exact={paquete.pk}&estado__exact=pendiente"
+                        )
+                elif form.cleaned_data["notificar"] and creado:
+                    messages.info(request, "Es un tablero nuevo: no se generan avisos de actualización (usá la carta de acceso).")
                 grupos = ", ".join(g.name for g in paquete.grupos.all())
                 accion = "creado" if creado else f"actualizado a la versión {paquete.version or '(sin número)'}"
                 messages.success(request, f"Paquete «{paquete.titulo}» {accion}.")
@@ -142,3 +169,65 @@ class VersionPaqueteAdmin(admin.ModelAdmin):
         version = queryset.first()
         activar_version(version)
         self.message_user(request, f"Ahora está publicada la versión {version.version or version.pk} de {version.paquete.slug}.")
+
+
+class RedireccionExterna(HttpResponseRedirect):
+    allowed_schemes = ["https", "mailto"]
+
+
+@admin.register(Aviso)
+class AvisoAdmin(admin.ModelAdmin):
+    list_display = ("destinatario", "boton", "medio", "estado", "tablero", "version_txt", "enviado")
+    list_filter = ("estado", "medio", "paquete")
+    search_fields = ("usuario__nombre", "usuario__email", "paquete__titulo")
+    readonly_fields = ("paquete", "version", "usuario", "medio", "estado", "asunto", "mensaje", "creado", "enviado", "detalle")
+    actions = ["marcar_enviado", "reintentar_correo"]
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="destinatario")
+    def destinatario(self, obj):
+        return obj.usuario.destinatario
+
+    @admin.display(description="tablero")
+    def tablero(self, obj):
+        return obj.paquete.slug
+
+    @admin.display(description="versión")
+    def version_txt(self, obj):
+        return obj.version.version if obj.version else "—"
+
+    @admin.display(description="acción")
+    def boton(self, obj):
+        if obj.estado == "enviado":
+            return "—"
+        url = reverse("admin:portal_aviso_abrir", args=[obj.pk])
+        texto = "Enviar por WhatsApp" if obj.medio == "whatsapp" else "Enviar por correo"
+        return format_html('<a class="button" href="{}" target="_blank" rel="noopener">{}</a>', url, texto)
+
+    def get_urls(self):
+        propias = [path("<int:pk>/abrir/", self.admin_site.admin_view(self.abrir_view), name="portal_aviso_abrir")]
+        return propias + super().get_urls()
+
+    def abrir_view(self, request, pk):
+        """Registra el envío y abre WhatsApp (o el programa de correo) con el mensaje escrito.
+        En WhatsApp no hay confirmación de lectura: se registra el clic."""
+        if not self.has_change_permission(request):
+            return redirect("admin:index")
+        aviso = Aviso.objects.select_related("usuario").get(pk=pk)
+        destino = url_whatsapp(aviso) if aviso.medio == "whatsapp" else url_mailto(aviso)
+        aviso.estado, aviso.enviado = "enviado", timezone.now()
+        aviso.detalle = "Abierto con un clic desde el panel."
+        aviso.save(update_fields=["estado", "enviado", "detalle"])
+        return RedireccionExterna(destino)
+
+    @admin.action(description="Marcar como enviado")
+    def marcar_enviado(self, request, queryset):
+        n = queryset.exclude(estado="enviado").update(estado="enviado", enviado=timezone.now())
+        self.message_user(request, f"{n} aviso(s) marcados como enviados.")
+
+    @admin.action(description="Reintentar el correo (avisos por correo)")
+    def reintentar_correo(self, request, queryset):
+        ok = sum(enviar_aviso_correo(a) for a in queryset.filter(medio="correo").exclude(estado="enviado"))
+        self.message_user(request, f"Correos enviados: {ok}.")

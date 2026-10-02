@@ -57,6 +57,8 @@ EXTENSIONES_PROHIBIDAS = {
 IGNORADOS_NOMBRE = {".DS_Store", "Thumbs.db", "desktop.ini"}
 IGNORADOS_PREFIJO = ("__MACOSX/",)
 
+CAMPOS_META = ("titulo", "tipo", "organismo", "descripcion", "resumen", "novedades", "version", "fecha", "estado")
+
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TIPOS = {"dashboard", "sitio"}
 
@@ -110,12 +112,16 @@ def validar_meta(meta):
     tipo = str(meta.get("tipo") or "dashboard").strip().lower()
     if tipo not in TIPOS:
         raise PaqueteInvalido(f'meta.json: tipo "{tipo}" no válido (dashboard o sitio).')
+    descripcion = str(meta.get("descripcion") or "").strip()
     return {
         "slug": slug,
         "titulo": titulo[:200],
         "tipo": tipo,
         "organismo": str(meta.get("organismo") or "").strip()[:200],
-        "descripcion": str(meta.get("descripcion") or "").strip(),
+        "descripcion": descripcion,
+        # Opcionales (contrato v3). Si faltan, se usa la descripción / quedan vacías.
+        "resumen": str(meta.get("resumen") or "").strip() or descripcion,
+        "novedades": str(meta.get("novedades") or "").strip(),
         "version": str(meta.get("version") or "").strip()[:40],
         "fecha": _fecha(meta.get("fecha")),
         "estado": _estado(meta.get("estado")),
@@ -252,7 +258,7 @@ def instalar(archivo, usuario=None):
         os.replace(tmp, destino)
         with transaction.atomic():
             paquete, creado = Paquete.objects.get_or_create(slug=meta["slug"], defaults={"titulo": meta["titulo"]})
-            for campo in ("titulo", "tipo", "organismo", "descripcion", "version", "fecha", "estado"):
+            for campo in CAMPOS_META:
                 setattr(paquete, campo, meta[campo])
             version = VersionPaquete.objects.create(
                 paquete=paquete,
@@ -282,7 +288,7 @@ def activar_version(version):
     """Vuelve a publicar una versión anterior (y su metadata)."""
     meta = validar_meta(version.meta) if version.meta else {}
     paquete = version.paquete
-    for campo in ("titulo", "tipo", "organismo", "descripcion", "version", "fecha", "estado"):
+    for campo in CAMPOS_META:
         if campo in meta:
             setattr(paquete, campo, meta[campo])
     paquete.version_actual = version

@@ -1,0 +1,14 @@
+{% autoescape off %}Se encuentra disponible en el portal el tablero «{{ paquete.titulo }}», versión {{ paquete.version|default:"sin número" }}{% if paquete.fecha %}, con fecha {{ paquete.fecha|date:"d/m/Y" }}{% endif %}.
+{% if es_actualizacion %}
+Se trata de una actualización de un tablero ya publicado.{% if paquete.novedades %} Novedades: {{ paquete.novedades }}{% endif %}
+{% endif %}
+Resumen:
+{{ paquete.resumen|default:paquete.descripcion }}
+
+Grupos con acceso: {{ grupos|default:"ninguno todavía (asignarlos en el panel)" }}.
+Estado: {{ paquete.get_estado_display }}.
+
+Enlace del visor: {{ enlace }}
+
+{{ firma_nombre }}
+{{ firma_matricula }}{% endautoescape %}

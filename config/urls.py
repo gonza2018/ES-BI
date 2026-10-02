@@ -15,6 +15,8 @@ admin.site.index_title = "Panel"
 urlpatterns = [
     path("gestion/respaldo/", operacion.descargar_respaldo, name="descargar_respaldo"),
     path("gestion/diagnostico-ip/", operacion.diagnostico_ip, name="diagnostico_ip"),
+    path("gestion/firma/", operacion.firma, name="firma"),
+    path("gestion/firma/imagen/", operacion.firma_imagen, name="firma_imagen"),
     path("gestion/", admin.site.urls),
     path("portal/", include("portal.urls")),
     path("sitemap.xml", sitemap, {"sitemaps": {"sitio": SitioSitemap}}, name="sitemap"),

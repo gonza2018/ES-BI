@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:cuentas_usuario_changelist' %}">Usuarios</a>
+&rsaquo; <a href="{% url 'admin:cuentas_usuario_change' original.pk %}">{{ original }}</a>
+&rsaquo; Carta de acceso
+</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  <p>Carta para <strong>{{ original.destinatario }}</strong>{% if original.organismo %} ({{ original.organismo }}){% endif %}.
+  Se descarga un PDF con su enlace personal y el código QR. <strong>El sistema no la envía</strong>: mandala vos desde tu correo.</p>
+  <ul>
+    {% if tiene_enlace %}<li><strong>Generar una carta nueva invalida el enlace de la carta anterior.</strong></li>{% endif %}
+    {% if tiene_contrasena %}
+      <li>Ya creó su contraseña. Si solo le mandás otro tablero, dejá la casilla sin marcar: va a entrar con la misma contraseña.</li>
+    {% else %}
+      <li>Todavía no tiene contraseña: la crea al abrir el enlace. Tiene {{ vigencia|default:"7" }} días; después el enlace vence.</li>
+    {% endif %}
+    <li>El enlace no se guarda en ningún lado (solo una huella cifrada): si perdés el PDF, generá otra carta.</li>
+    <li>Firma manuscrita: {% if hay_firma %}cargada ✔{% else %}<strong>no cargada</strong> (la carta sale solo con el texto){% endif %} —
+      <a href="{% url 'firma' %}">administrar firma</a>.</li>
+  </ul>
+  <form method="post">
+    {% csrf_token %}
+    <fieldset class="module aligned">
+      {% for campo in form %}
+      <div class="form-row{% if campo.errors %} errors{% endif %}">
+        {{ campo.errors }}
+        <div class="flex-container">
+          {% if campo.field.widget.input_type == "checkbox" %}{{ campo }} <label class="vCheckboxLabel" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {% else %}<label for="{{ campo.id_for_label }}">{{ campo.label }}:</label> {{ campo }}{% endif %}
+        </div>
+        {% if campo.help_text %}<div class="help">{{ campo.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </fieldset>
+    <div class="submit-row"><input type="submit" value="Generar y descargar PDF" class="default"></div>
+  </form>
+</div>
+{% endblock %}

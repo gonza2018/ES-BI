@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 
@@ -33,6 +34,27 @@ class UsuarioManager(UserManager):
         return self.get(email__iexact=email)
 
 
+# Lista del desplegable del admin. "Otro" permite escribir uno libre (se guarda como texto).
+# Abogados y médicos: Dr./Dra. Contadores: Cr./Cra.
+TRATAMIENTOS = ["Sr.", "Sra.", "Lic.", "Ing.", "Arq.", "Cr.", "Cra.", "Dr.", "Dra.", "Mg.", "Prof."]
+
+
+def destinatario(usuario):
+    """Cómo se nombra a la persona en TODOS los textos (acceso, visor, carta, avisos).
+
+    Con tratamiento: "Cra. María Pérez". Sin tratamiento: "María Pérez".
+    Nunca deja un espacio ni un punto suelto. Sin nombre cargado, usa el correo.
+    """
+    tratamiento = " ".join((usuario.tratamiento or "").split())
+    nombre = " ".join((usuario.nombre or "").split()) or usuario.email
+    return f"{tratamiento} {nombre}" if tratamiento else nombre
+
+validar_celular = RegexValidator(
+    r"^\+[1-9]\d{7,14}$",
+    "Formato internacional, sin espacios ni guiones: + código de país, 9 y número. Ej.: +5493854123456",
+)
+
+
 class Usuario(AbstractBaseUser, PermissionsMixin):
     """Usuario del portal. El correo es el identificador; no hay registro público.
 
@@ -41,9 +63,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     """
 
     email = models.EmailField("correo electrónico", unique=True)
-    nombre = models.CharField("nombre", max_length=150, blank=True)
+    nombre = models.CharField("nombre", max_length=150, blank=True, help_text="Nombre y apellido completos, ej. María Pérez.")
     organismo = models.CharField(
         "organismo", max_length=150, blank=True, help_text="Solo informativo. Los permisos se dan con los grupos."
+    )
+    tratamiento = models.CharField(
+        "tratamiento", max_length=20, blank=True, help_text="Opcional. Sr., Sra., Lic., Dr., Cra., etc.",
+    )
+    celular = models.CharField(
+        "celular", max_length=16, blank=True, validators=[validar_celular],
+        help_text="Opcional. Para avisos por WhatsApp. Formato: +5493854123456. Dato personal: no se muestra fuera del admin.",
     )
     is_staff = models.BooleanField(
         "acceso al admin", default=False, help_text="Permite entrar al panel de administración."
@@ -76,3 +105,17 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.nombre.split(" ")[0] if self.nombre else self.email
+
+    @property
+    def destinatario(self):
+        return destinatario(self)
+
+    @property
+    def apellido(self):
+        partes = (self.nombre or "").split()
+        return partes[-1] if partes else self.email.split("@")[0]
+
+    @property
+    def celular_whatsapp(self):
+        """Solo dígitos, como lo pide wa.me."""
+        return "".join(c for c in self.celular if c.isdigit())

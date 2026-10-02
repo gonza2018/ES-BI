@@ -205,6 +205,15 @@ CONTACTO_DESTINATARIOS = env_list("CONTACTO_DESTINATARIOS", EMAIL_HOST_USER)
 # WhatsApp del sitio: solo dígitos, con código de país (ej. 5493851234567).
 # Vacío = no se muestran los botones de WhatsApp.
 WHATSAPP_NUMERO = "".join(c for c in os.environ.get("WHATSAPP_NUMERO", "") if c.isdigit())
+# Firma de cartas, correos y avisos (el remitente es siempre la firma, sin logos).
+FIRMA_NOMBRE = os.environ.get("FIRMA_NOMBRE", "Lic. en Economía Gonzalo Javier Sereno")
+FIRMA_MATRICULA = os.environ.get("FIRMA_MATRICULA", "CPCESE M. 22")
+CARTA_CIUDAD = os.environ.get("CARTA_CIUDAD", "Santiago del Estero")
+# Firma manuscrita para la carta PDF. PRIVADA: vive en el disco de datos (nunca en static/
+# ni en el repositorio, que son públicos). Se sube desde /gestion/firma/.
+FIRMA_ARCHIVO = Path(os.environ.get("FIRMA_ARCHIVO") or DATA_DIR / "firma.png")
+# Días para crear la contraseña con el enlace de la carta (después vence).
+ACCESO_VIGENCIA_DIAS = 7
 # Si está definida, el formulario envía por Formspree (HTTPS) en lugar de SMTP.
 FORMSPREE_ID = os.environ.get("FORMSPREE_ID", "").strip()
 
