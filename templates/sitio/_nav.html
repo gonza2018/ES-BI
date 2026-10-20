@@ -14,6 +14,11 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'sitio:inicio' %}#nosotros">QUIÉNES SOMOS</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'sitio:inicio' %}#servicios">SERVICIOS</a></li>
                 {% if proyectos %}<li class="nav-item"><a class="nav-link" href="{% url 'sitio:inicio' %}#proyectos">PROYECTOS</a></li>{% endif %}
+                {% if DATOS.hay %}
+                <li class="nav-item">
+                    <a class="nav-link{% if request.resolver_match.namespace == 'datos' %} active{% endif %}" href="{% url 'datos:lista' %}"{% if request.resolver_match.namespace == 'datos' %} aria-current="page"{% endif %}>DATOS{% if DATOS.nuevo %} <span class="badge rounded-pill text-bg-primary pastilla-nuevo">Nuevo</span>{% endif %}</a>
+                </li>
+                {% endif %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'sitio:inicio' %}#contacto">CONTACTO</a></li>
                 <li class="nav-item ms-lg-3">
                     <a class="nav-link acceso-clientes" href="{% url 'portal:inicio' %}">

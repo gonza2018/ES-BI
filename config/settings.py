@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "cuentas",
     "sitio",
     "portal",
+    "datos",
 ]
 
 MIDDLEWARE = [
@@ -104,6 +105,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "sitio.context_processors.sitio",
+                "datos.context_processors.datos",
             ],
         },
     },
@@ -186,6 +188,10 @@ MEDIA_ROOT = DATA_DIR / "media_publica"
 PAQUETES_ROOT = DATA_DIR / "paquetes_privados"
 PAQUETE_MAX_BYTES = 50 * 1024 * 1024  # tamaño máximo descomprimido (y del zip subido)
 PAQUETE_MAX_ARCHIVOS = 2000
+
+# Paquetes de libre acceso (/datos/): mientras el último se haya actualizado hace estos días
+# o menos, el menú muestra "Nuevo" y Inicio muestra la franja de aviso.
+DIAS_AVISO_DATOS = 15
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 

@@ -52,6 +52,13 @@ CSP_PAQUETES = "; ".join(
 )
 
 
+# CSP de los archivos de paquetes de LIBRE ACCESO (/datos/ver/...). Igual que la de paquetes,
+# más `sandbox` sin allow-same-origin: lo ve cualquiera, incluso Gonzalo con la sesión del admin
+# abierta, y así el dashboard no puede usar esa sesión (su origen es opaco). Por eso las fuentes
+# necesitan `Access-Control-Allow-Origin: *` y el dashboard no puede usar localStorage ni fetch.
+CSP_DATOS_PUBLICOS = CSP_PAQUETES + "; sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox"
+
+
 class CabecerasSeguridadMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

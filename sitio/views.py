@@ -150,6 +150,7 @@ def robots_txt(request):
     base = f"https://{settings.HOST_CANONICO}" if settings.HOST_CANONICO else request.build_absolute_uri("/").rstrip("/")
     lineas = [
         "User-agent: *",
+        "Allow: /datos/",
         "Disallow: /portal/",
         "Disallow: /gestion/",
         "Disallow: /contacto/",
