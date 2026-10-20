@@ -31,18 +31,37 @@ class VersionPaqueteInline(admin.TabularInline):
         return obj.es_actual
 
 
+class FiltroPublico(admin.SimpleListFilter):
+    """Filtro por libre acceso en /datos/ (el campo se llama «publico»)."""
+
+    title = "público"
+    parameter_name = "publico"
+
+    def lookups(self, request, model_admin):
+        return [("1", "Sí (libre acceso en /datos/)"), ("0", "No")]
+
+    def queryset(self, request, queryset):
+        if self.value() == "1":
+            return queryset.filter(publico=True)
+        if self.value() == "0":
+            return queryset.filter(publico=False)
+        return queryset
+
+
 @admin.register(Paquete)
 class PaqueteAdmin(admin.ModelAdmin):
     change_list_template = "admin/portal/paquete/change_list.html"
     change_form_template = "admin/portal/paquete/change_form.html"
-    list_display = ("titulo", "slug", "tipo", "estado", "version", "fecha", "lista_grupos", "publicado", "actualizado")
-    list_filter = ("estado", "tipo", "publicado", "grupos")
+    list_display = (
+        "titulo", "slug", "tipo", "estado", "version", "fecha", "lista_grupos", "publicado", "es_publico", "actualizado",
+    )
+    list_filter = ("estado", "tipo", "publicado", FiltroPublico, "grupos")
     search_fields = ("titulo", "slug", "organismo")
     filter_horizontal = ("grupos",)
     readonly_fields = ("slug", "tipo", "organismo", "version", "fecha", "ver_en_portal", "creado", "actualizado")
     fieldsets = (
         (None, {"fields": ("titulo", "slug", "ver_en_portal")}),
-        ("Acceso", {"fields": ("grupos", "publicado")}),
+        ("Acceso", {"fields": ("grupos", "publicado", "publico")}),
         ("Datos (vienen de meta.json)", {"fields": ("estado", "descripcion", "resumen", "novedades", "tipo", "organismo", "version", "fecha")}),
         ("Registro", {"classes": ("collapse",), "fields": ("creado", "actualizado")}),
     )
@@ -52,6 +71,10 @@ class PaqueteAdmin(admin.ModelAdmin):
     @admin.display(description="grupos")
     def lista_grupos(self, obj):
         return ", ".join(g.name for g in obj.grupos.all()) or "— sin grupos —"
+
+    @admin.display(description="Público", boolean=True, ordering="publico")
+    def es_publico(self, obj):
+        return obj.publico
 
     @admin.display(description="en el portal")
     def ver_en_portal(self, obj):

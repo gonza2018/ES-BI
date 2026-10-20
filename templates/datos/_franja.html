@@ -1,0 +1,13 @@
+{% load static %}{% if DATOS.nuevo %}{% with p=DATOS.ultimo %}
+<div class="aviso-datos" id="aviso-datos" role="region" aria-label="Aviso de datos nuevos"
+     data-fecha="{{ p.fecha_actualizacion|date:'Y-m-d' }}">
+    <a class="aviso-datos__enlace" href="{% url 'datos:visor' p.slug %}">
+        <span class="aviso-datos__punto" aria-hidden="true"></span>
+        <span class="aviso-datos__largo">Nuevos datos: {{ p.titulo }} · actualizado el {{ p.fecha_actualizacion|date:"d/m/Y" }} · Ver ahora <span aria-hidden="true">→</span></span>
+        <span class="aviso-datos__corto">Nuevos datos · Ver <span aria-hidden="true">→</span></span>
+    </a>
+    <button type="button" class="aviso-datos__cerrar" aria-label="Cerrar el aviso de datos nuevos"><span aria-hidden="true">&times;</span></button>
+</div>
+{# Archivo estático (sin JS inline: la CSP del sitio no lo permite). Va justo acá para ocultar la franja antes de pintarla. #}
+<script src="{% static 'sitio/js/aviso_datos.js' %}"></script>
+{% endwith %}{% endif %}

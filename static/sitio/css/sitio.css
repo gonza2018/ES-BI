@@ -63,3 +63,51 @@ a:focus-visible, button:focus-visible, .form-control:focus-visible {
 .visor-marco { background: #fff; border: 1px solid #dee2e6; border-radius: .5rem; overflow: hidden; }
 .visor { display: block; width: 100%; height: calc(100vh - 140px); min-height: 560px; border: 0; }
 .visor:fullscreen { height: 100%; }
+
+/* --- Datos de libre acceso (/datos/) --- */
+/* Pastilla "Nuevo" del menú y de las tarjetas: texto blanco sobre el azul de los botones del sitio. */
+.pastilla-nuevo { font-size: .68rem; letter-spacing: .02em; vertical-align: middle; }
+
+/* Franja de aviso de Inicio: una línea, ancho completo, justo debajo del menú. */
+.aviso-datos {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    height: 44px; padding: 0 3rem; overflow: hidden;
+    background: var(--bs-primary); color: #fff; font-size: .95rem; font-weight: 500;
+}
+.aviso-datos[hidden] { display: none; }
+.aviso-datos__enlace {
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+    height: 100%; white-space: nowrap; color: #fff; text-decoration: none;
+}
+.aviso-datos__enlace:hover, .aviso-datos__enlace:focus { color: #fff; text-decoration: underline; }
+.aviso-datos__punto { flex: none; width: .55rem; height: .55rem; border-radius: 50%; background: #fff; }
+@media (prefers-reduced-motion: no-preference) {
+    .aviso-datos__punto { animation: aviso-latido 2.4s ease-in-out infinite; }
+}
+@keyframes aviso-latido { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.75); } }
+.aviso-datos__corto { display: none; }
+.aviso-datos__cerrar {
+    position: absolute; top: 2px; right: .25rem; width: 40px; height: 40px;
+    padding: 0; border: 0; border-radius: .25rem; background: transparent;
+    color: #fff; font-size: 1.6rem; line-height: 1; cursor: pointer;
+}
+.aviso-datos__cerrar:hover { background: rgba(255, 255, 255, .18); }
+/* El contorno azul de todo el sitio no se vería sobre el fondo azul. */
+.aviso-datos a:focus-visible, .aviso-datos button:focus-visible { outline: 3px solid #fff; outline-offset: -4px; }
+@media (max-width: 767.98px) {
+    .aviso-datos { padding: 0 2.75rem; font-size: .9rem; }
+    .aviso-datos__largo { display: none; }
+    .aviso-datos__corto { display: inline; }
+}
+
+/* Visor de /datos/<slug>/: la página ocupa exactamente el alto de la pantalla (100dvh) y el
+   dashboard se desplaza adentro del iframe, así en el celular no hay doble barra de desplazamiento. */
+.datos-body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; background: #f4f6f8; }
+.datos-body > nav, .datos-cabecera { flex: none; }
+.datos-cabecera { padding: .5rem 1rem; background: #fff; border-bottom: 1px solid #dee2e6; }
+.datos-descripcion {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+}
+.datos-marco { flex: 1 1 auto; min-height: 0; background: #fff; }
+.datos-visor { display: block; width: 100%; height: 100%; border: 0; }
+.datos-visor:fullscreen { height: 100%; }

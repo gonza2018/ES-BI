@@ -5,8 +5,10 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.db import models
+from django.db.models import F
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 class Paquete(models.Model):
@@ -33,6 +35,12 @@ class Paquete(models.Model):
     publicado = models.BooleanField(
         "publicado", default=True, help_text="Desmarcar para ocultarlo a todos sin borrarlo."
     )
+    publico = models.BooleanField(
+        "libre acceso en /datos/",
+        default=False,
+        help_text="Cualquier visitante lo ve en /datos/ sin iniciar sesión (sin descargas). "
+        "Solo se muestra si además está publicado. Una versión nueva conserva esta marca.",
+    )
     version_actual = models.ForeignKey(
         "VersionPaquete", verbose_name="versión publicada", null=True, blank=True,
         on_delete=models.SET_NULL, related_name="+",
@@ -55,6 +63,32 @@ class Paquete(models.Model):
         if usuario.is_superuser:
             return qs
         return qs.filter(publicado=True, grupos__in=usuario.groups.all()).distinct()
+
+    @classmethod
+    def publicos(cls):
+        """Paquetes de libre acceso (/datos/): marcados como públicos, publicados y con versión vigente.
+
+        Del más recientemente actualizado al más antiguo (fecha del meta.json de la versión vigente;
+        los que no traen fecha quedan al final).
+        """
+        return (
+            cls.objects.filter(publico=True, publicado=True, version_actual__isnull=False)
+            .select_related("version_actual")
+            .order_by(F("version_actual__fecha").desc(nulls_last=True), "-actualizado", "titulo")
+        )
+
+    @property
+    def fecha_actualizacion(self):
+        """Fecha de actualización = la "fecha" del meta.json de la versión vigente."""
+        return self.version_actual.fecha if self.version_actual else None
+
+    def es_reciente(self, hoy=None):
+        """¿Se actualizó hace DIAS_AVISO_DATOS días o menos? Sin fecha en el meta.json, no."""
+        fecha = self.fecha_actualizacion
+        if not fecha:
+            return False
+        hoy = hoy or timezone.localdate()
+        return (hoy - fecha).days <= settings.DIAS_AVISO_DATOS
 
     @property
     def directorio(self):

@@ -4,6 +4,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path, re_path
 from django.views.static import serve
 
+from datos.sitemaps import DatosSitemap
 from sitio.sitemaps import SitioSitemap
 
 from . import operacion
@@ -19,7 +20,8 @@ urlpatterns = [
     path("gestion/firma/imagen/", operacion.firma_imagen, name="firma_imagen"),
     path("gestion/", admin.site.urls),
     path("portal/", include("portal.urls")),
-    path("sitemap.xml", sitemap, {"sitemaps": {"sitio": SitioSitemap}}, name="sitemap"),
+    path("datos/", include("datos.urls")),
+    path("sitemap.xml", sitemap, {"sitemaps": {"sitio": SitioSitemap, "datos": DatosSitemap}}, name="sitemap"),
     # Medios PÚBLICOS: solo imágenes de fichas de proyectos.
     # Los paquetes privados del portal viven en otro directorio y no se sirven acá.
     re_path(r"^media/(?P<path>proyectos/.+)$", serve, {"document_root": settings.MEDIA_ROOT}),

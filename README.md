@@ -7,6 +7,7 @@ Sitio institucional de ES & BI y portal privado de clientes (`/portal/`), en Dja
 | `cuentas` | Usuario con **correo como identificador** (sin username). |
 | `sitio` | Web pública: inicio, quiénes somos, servicios (carrusel con ventanas "Conocer más"), proyectos, contacto, página personal `/cv/`, `robots.txt`, `sitemap.xml`. |
 | `portal` | Login por correo y contraseña, protección contra fuerza bruta (django-axes) y **paquetes** (dashboards y sitios estáticos) privados por organismo. |
+| `datos` | Pestaña **DATOS** (`/datos/`): muestra sin login los paquetes del portal marcados como públicos, más la franja de aviso de Inicio. No tiene modelos: usa `portal.Paquete`. |
 | `cfi_matriz` | *(Paso 3, pendiente)* App de carga de datos del CFI, con base propia. |
 
 El admin está en **`/gestion/`** (no en `/admin/`).
@@ -218,6 +219,33 @@ en otro documento. El original solo queda en el disco privado. Ajustable en `por
   `Cache-Control: private, max-age=300`. El resto del sitio mantiene la CSP estricta.
 - **Los zips de paquetes nunca van al repositorio** (es público): `.gitignore` excluye `*.zip`.
   Para probar con el paquete real: `PAQUETE_REAL=C:\ruta\pbg-sde.zip python manage.py test portal`.
+
+## Datos de libre acceso (/datos/)
+
+Un paquete del portal puede mostrarse **sin iniciar sesión** en la pestaña **DATOS** del sitio.
+
+**Publicar uno:** admin → *Paquetes* → el paquete → marcar **Libre acceso en /datos/** → *Guardar*. No hace falta
+volver a subir el zip. Para sacarlo, desmarcar la casilla (o *Publicado*). En la lista hay una columna y un filtro
+**Público**. Una versión nueva del mismo paquete conserva la marca.
+
+**Qué ve el visitante**
+- `/datos/` listado en tarjetas (404 si no hay ningún paquete público y publicado; en ese caso la pestaña tampoco aparece) ·
+  `/datos/<slug>/` visor con el dashboard en un iframe · `/datos/ver/<slug>/<ruta>` archivos del paquete.
+- **Sin descargas:** solo `.html .js .css .json .woff2 .png .jpg .jpeg .svg`. `.xlsx`, `.pdf`, `.csv` y todo lo que esté
+  en `descargas/` dan 404. Un paquete privado o despublicado da 404 en las tres rutas (aunque haya sesión de admin).
+- **Todo archivo permitido fuera de `descargas/` queda accesible por su URL** (incluidos `meta.json` y los `.json` de datos):
+  no poner en un paquete público nada que no deba verse. Lo que sea solo para clientes va en `descargas/` (que acá da 404).
+- **Fecha de actualización** = campo `fecha` del `meta.json` de la versión vigente (la fija quien arma el dashboard).
+- **Pastilla "Nuevo"** en el menú y **franja de aviso** en Inicio ("Nuevos datos: … · Ver ahora →") mientras el último
+  paquete público tenga `DIAS_AVISO_DATOS` días o menos (`config/settings.py`, 15). La franja se cierra con la ×
+  (`static/sitio/js/aviso_datos.js`, recuerda la fecha en `localStorage`) y vuelve a aparecer con una versión más nueva.
+
+**Seguridad (importante para el dashboard):** los archivos de `/datos/ver/` llevan la CSP de paquetes más
+`sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox` (`CSP_DATOS_PUBLICOS`, en `config/middleware.py`), sin
+`allow-same-origin`. Así, aunque Gonzalo tenga abierta la sesión del admin, el dashboard no puede usarla. Consecuencias:
+el dashboard **no puede usar `localStorage`, `fetch` ni formularios**, y las fuentes `.woff2` se sirven con
+`Access-Control-Allow-Origin: *` (con `sandbox` el origen es opaco y sin eso el navegador las rechaza). Si algún día las
+tipografías no cargan, revisar esto antes de quitar el `sandbox`.
 
 ## Mensajes del formulario de contacto
 

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ paquete.titulo }} | ES & BI{% endblock %}
+{% block meta %}
+    <meta name="description" content="{{ paquete.descripcion|default:'Datos de libre acceso de ES & BI.'|truncatechars:160 }}">
+    <link rel="canonical" href="{{ URL_BASE }}{% url 'datos:visor' paquete.slug %}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_AR">
+    <meta property="og:site_name" content="ES & BI">
+    <meta property="og:title" content="{{ paquete.titulo }}">
+    <meta property="og:description" content="{{ paquete.descripcion|default:'Datos de libre acceso de ES & BI.'|truncatechars:160 }}">
+    <meta property="og:url" content="{{ URL_BASE }}{% url 'datos:visor' paquete.slug %}">
+    {% if paquete.tiene_miniatura %}
+    <meta property="og:image" content="{{ URL_BASE }}{% url 'datos:ver_archivo' paquete.slug 'miniatura.png' %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    {% else %}
+    <meta property="og:image" content="{{ URL_BASE }}{% static 'sitio/img/og_es_bi.jpg' %}">
+    {% endif %}
+    <meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block body_class %}datos-body{% endblock %}
+
+{% block content %}
+{% include 'sitio/_nav.html' %}
+
+<header class="datos-cabecera">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="me-auto">
+            <h1 class="h5 mb-0">{{ paquete.titulo }}</h1>
+            <p class="small text-secondary mb-0">
+                {% if paquete.version %}Versión {{ paquete.version }}{% endif %}
+                {% if paquete.version and paquete.fecha_actualizacion %}·{% endif %}
+                {% if paquete.fecha_actualizacion %}Actualizado el {{ paquete.fecha_actualizacion|date:"d/m/Y" }}{% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-primary btn-sm" id="pantalla-completa">
+                <i class="fa-solid fa-expand" aria-hidden="true"></i> Pantalla completa
+            </button>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'datos:ver_indice' paquete.slug %}" target="_blank" rel="noopener">
+                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Abrir en pestaña nueva
+            </a>
+        </div>
+    </div>
+    {% if paquete.descripcion %}<p class="datos-descripcion small mb-0 mt-1" title="{{ paquete.descripcion }}">{{ paquete.descripcion }}</p>{% endif %}
+</header>
+
+<main id="contenido" class="datos-marco">
+    <iframe id="visor" class="datos-visor" src="{% url 'datos:ver_indice' paquete.slug %}"
+            title="{{ paquete.titulo }}" allow="fullscreen" allowfullscreen></iframe>
+</main>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'portal/js/visor.js' %}" defer></script>{% endblock %}
