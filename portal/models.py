@@ -41,6 +41,12 @@ class Paquete(models.Model):
         help_text="Cualquier visitante lo ve en /datos/ sin iniciar sesión (sin descargas). "
         "Solo se muestra si además está publicado. Una versión nueva conserva esta marca.",
     )
+    institucional = models.BooleanField(
+        "tablero institucional (sin marca)",
+        default=False,
+        help_text="Quien solo ve tableros institucionales recibe el portal sin logo, sin «ES & BI» y sin firma, "
+        "con carta de acceso neutra y sin avisos por correo. Una versión nueva conserva esta marca.",
+    )
     version_actual = models.ForeignKey(
         "VersionPaquete", verbose_name="versión publicada", null=True, blank=True,
         on_delete=models.SET_NULL, related_name="+",

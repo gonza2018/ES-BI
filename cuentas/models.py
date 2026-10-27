@@ -70,6 +70,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     tratamiento = models.CharField(
         "tratamiento", max_length=20, blank=True, help_text="Opcional. Sr., Sra., Lic., Dr., Cra., etc.",
     )
+    cargo = models.CharField(
+        "cargo", max_length=200, blank=True,
+        help_text="Opcional. Se muestra en la bienvenida de los tableros institucionales.",
+    )
     celular = models.CharField(
         "celular", max_length=16, blank=True, validators=[validar_celular],
         help_text="Opcional. Para avisos por WhatsApp. Formato: +5493854123456. Dato personal: no se muestra fuera del admin.",

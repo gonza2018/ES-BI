@@ -24,7 +24,10 @@ logger = logging.getLogger(__name__)
 # Enlaces y tokens
 # ---------------------------------------------------------------------------
 
-def url_absoluta(request, ruta):
+def url_absoluta(request, ruta, paquete=None):
+    """URL completa. Los enlaces de tableros institucionales usan HOST_TABLERO, si está configurado."""
+    if paquete is not None and paquete.institucional and settings.HOST_TABLERO:
+        return f"https://{settings.HOST_TABLERO}{ruta}"
     if settings.HOST_CANONICO:
         return f"https://{settings.HOST_CANONICO}{ruta}"
     return request.build_absolute_uri(ruta)
@@ -159,6 +162,8 @@ def crear_avisos(request, paquete):
     Con celular: WhatsApp (lo envía Gonzalo con un clic). Sin celular: correo automático."""
     from django.contrib.auth import get_user_model
 
+    if paquete.institucional:
+        return []  # tableros institucionales: no sale ningún aviso con la firma ni desde el correo de Gonzalo
     usuarios = (
         get_user_model().objects.filter(is_active=True, is_staff=False, groups__in=paquete.grupos.all())
         .distinct().order_by("nombre", "email")

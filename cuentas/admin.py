@@ -45,7 +45,7 @@ class UsuarioCreationForm(TratamientoFormMixin, forms.ModelForm):
 
     class Meta:
         model = Usuario
-        fields = ("email", "nombre", "organismo", "celular", "groups")
+        fields = ("email", "nombre", "cargo", "organismo", "celular", "groups")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -97,7 +97,7 @@ class UsuarioAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Datos", {"fields": ("tratamiento_lista", "tratamiento_otro", "nombre", "organismo", "celular")}),
+        ("Datos", {"fields": ("tratamiento_lista", "tratamiento_otro", "nombre", "cargo", "organismo", "celular")}),
         ("Acceso", {"fields": ("is_active", "groups")}),
         (
             "Administración",
@@ -110,7 +110,7 @@ class UsuarioAdmin(UserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("email", "tratamiento_lista", "tratamiento_otro", "nombre", "organismo", "celular", "groups"),
+                "fields": ("email", "tratamiento_lista", "tratamiento_otro", "nombre", "cargo", "organismo", "celular", "groups"),
                 "description": "Sin contraseña: la persona la crea con su carta de acceso "
                 "(botón «Generar carta de acceso» en la ficha, después de guardar).",
             },
@@ -164,7 +164,7 @@ def _carta_view(model_admin, request, object_id):
     if request.method == "POST" and form.is_valid():
         paquete = form.cleaned_data["paquete"]
         token = generar_acceso(usuario, paquete, form.cleaned_data.get("restablecer", False))
-        enlace = url_absoluta(request, ruta_acceso(token, paquete.slug))
+        enlace = url_absoluta(request, ruta_acceso(token, paquete.slug), paquete)
         pdf = generar_carta(usuario, paquete, enlace)
         respuesta = HttpResponse(pdf, content_type="application/pdf")
         respuesta["Content-Disposition"] = f'attachment; filename="{nombre_archivo(paquete, usuario)}"'

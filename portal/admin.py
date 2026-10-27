@@ -55,13 +55,13 @@ class PaqueteAdmin(admin.ModelAdmin):
     list_display = (
         "titulo", "slug", "tipo", "estado", "version", "fecha", "lista_grupos", "publicado", "es_publico", "actualizado",
     )
-    list_filter = ("estado", "tipo", "publicado", FiltroPublico, "grupos")
+    list_filter = ("estado", "tipo", "publicado", FiltroPublico, "institucional", "grupos")
     search_fields = ("titulo", "slug", "organismo")
     filter_horizontal = ("grupos",)
     readonly_fields = ("slug", "tipo", "organismo", "version", "fecha", "ver_en_portal", "creado", "actualizado")
     fieldsets = (
         (None, {"fields": ("titulo", "slug", "ver_en_portal")}),
-        ("Acceso", {"fields": ("grupos", "publicado", "publico")}),
+        ("Acceso", {"fields": ("grupos", "publicado", "publico", "institucional")}),
         ("Datos (vienen de meta.json)", {"fields": ("estado", "descripcion", "resumen", "novedades", "tipo", "organismo", "version", "fecha")}),
         ("Registro", {"classes": ("collapse",), "fields": ("creado", "actualizado")}),
     )

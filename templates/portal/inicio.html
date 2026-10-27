@@ -1,6 +1,6 @@
 {% extends 'portal/base_portal.html' %}
 {% load static %}
-{% block title %}Mis tableros | Portal ES & BI{% endblock %}
+{% block title %}Mis tableros | {{ portal_nombre }}{% endblock %}
 {% block portal %}
 <h1 class="h3 mb-1">Hola, {{ user.get_short_name }}</h1>
 <p class="text-secondary mb-4">

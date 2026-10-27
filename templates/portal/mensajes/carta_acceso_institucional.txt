@@ -1,0 +1,11 @@
+{% autoescape off %}Le damos la bienvenida al tablero «{{ paquete.titulo }}».
+
+{{ paquete.resumen|default:paquete.descripcion }}
+
+[[ENLACE]]
+
+La primera vez que ingrese se le pedirá crear una contraseña personal, que solo usted conocerá. Desde entonces, el mismo enlace le pedirá únicamente esa contraseña. Le sugerimos guardarla por escrito.
+
+El enlace debe abrirse dentro de los {{ vigencia }} días. Si vence, o si olvida la contraseña, solicite un enlace nuevo a quien le entregó este acceso.
+
+El acceso es personal: le pedimos no reenviarlo.{% endautoescape %}
