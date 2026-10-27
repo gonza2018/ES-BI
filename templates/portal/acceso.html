@@ -1,12 +1,12 @@
 {% extends 'portal/base_portal.html' %}
-{% block title %}Acceso al portal | ES & BI{% endblock %}
+{% block title %}Acceso | {{ portal_nombre }}{% endblock %}
 {% block portal %}
 <div class="portal-login mx-auto">
     <div class="card shadow-sm">
         <div class="card-body p-4">
         {% if modo == "vencido" %}
             <h1 class="h4">Enlace vencido</h1>
-            <p class="mb-0">Este enlace venció. Solicite uno nuevo al {{ FIRMA_NOMBRE }} - {{ FIRMA_MATRICULA }}.</p>
+            <p class="mb-0">Este enlace venció. Solicite uno nuevo {{ contacto_acceso }}.</p>
         {% else %}
             {% if modo == "crear" %}
             <h1 class="h4 mb-1">Le damos la bienvenida, {{ usuario.destinatario }}</h1>
@@ -28,14 +28,16 @@
             </form>
             {% if modo == "crear" %}
             <div class="alert alert-warning small mt-3 mb-0">
-                Guarde su contraseña por escrito. En caso de olvido, solicite un nuevo enlace al {{ FIRMA_NOMBRE }} - {{ FIRMA_MATRICULA }}.
+                Guarde su contraseña por escrito. En caso de olvido, solicite un nuevo enlace {{ contacto_acceso }}.
             </div>
             {% else %}
-            <p class="text-secondary small mt-3 mb-0">¿Olvidó su contraseña? Solicite un nuevo enlace al {{ FIRMA_NOMBRE }} - {{ FIRMA_MATRICULA }}.</p>
+            <p class="text-secondary small mt-3 mb-0">¿Olvidó su contraseña? Solicite un nuevo enlace {{ contacto_acceso }}.</p>
             {% endif %}
         {% endif %}
+            {% if not marca_neutra %}
             <hr>
             <p class="text-secondary small mb-0">Sus datos de contacto se usan solo para enviarle este tablero y sus actualizaciones.</p>
+            {% endif %}
         </div>
     </div>
 </div>

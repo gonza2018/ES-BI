@@ -13,6 +13,7 @@ from django.views.decorators.http import require_http_methods, require_safe
 from config.middleware import CSP_PAQUETES
 
 from .accesos import acceso_vencido, buscar_acceso
+from .marca import contexto_marca, es_neutro, host_tablero
 from .forms import ContrasenaAccesoForm, LoginCorreoForm
 from .models import Paquete
 from .paquetes import TIPOS_SERVIDOS, resolver_ruta
@@ -25,7 +26,13 @@ class LoginView(auth_views.LoginView):
 
 
 class LogoutView(auth_views.LogoutView):
-    pass
+    def post(self, request, *args, **kwargs):
+        neutra = es_neutro(request)
+        respuesta = super().post(request, *args, **kwargs)
+        if neutra and not host_tablero(request):
+            # Vuelve a la pantalla de ingreso sin marca (fuera del host del tablero).
+            return redirect(reverse("portal:login") + "?tablero=1")
+        return respuesta
 
 
 def _paquete_visible(request, slug):
@@ -41,6 +48,8 @@ def _paquete_visible(request, slug):
 def inicio(request):
     grupos = list(request.user.groups.values_list("name", flat=True))
     paquetes = Paquete.visibles_para(request.user).prefetch_related("grupos")
+    if es_neutro(request) and len(paquetes) == 1:
+        return redirect("portal:tablero", paquetes[0].slug)
     return render(request, "portal/inicio.html", {"grupos": grupos, "paquetes": paquetes})
 
 
@@ -104,6 +113,8 @@ def acceso(request, token, slug):
         return redirect(destino)
 
     contexto = {"usuario": usuario}
+    if registro.paquete is not None and registro.paquete.institucional:
+        contexto.update(contexto_marca(True))
     if not usuario.has_usable_password():
         if acceso_vencido(registro):
             respuesta = render(request, "portal/acceso.html", {**contexto, "modo": "vencido"}, status=410)

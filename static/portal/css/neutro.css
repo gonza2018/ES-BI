@@ -1,0 +1,14 @@
+/* Portal de los tableros institucionales: colores del tablero, sin marca. */
+.portal-neutro { background: #F2EFE7; color: #1A202C; }
+.portal-neutro .navbar { background: #0A2240 !important; }
+.portal-neutro .navbar-brand { color: #F3F1EA; font-weight: 600; letter-spacing: .01em; }
+.portal-neutro .btn-primary { background: #0A2240; border-color: #0A2240; }
+.portal-neutro .btn-primary:hover, .portal-neutro .btn-primary:focus { background: #1A3D68; border-color: #1A3D68; }
+.portal-neutro .btn-outline-primary { color: #0A2240; border-color: #0A2240; }
+.portal-neutro .btn-outline-primary:hover { background: #0A2240; color: #F3F1EA; }
+.portal-neutro .card, .portal-neutro .bienvenida { background: #FAF8F3; border-color: #DDD6C9; }
+.portal-neutro .bienvenida { border-left: 4px solid #C8102E !important; }
+.portal-neutro .alert-warning { background: #FAF8F3; border-color: #DDD6C9; color: #1A202C; }
+@media (max-width: 576px) {
+  .portal-neutro .navbar-brand { white-space: normal; font-size: 1rem; line-height: 1.3; }
+}

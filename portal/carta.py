@@ -82,7 +82,8 @@ def _estilos():
 
 
 def generar_carta(usuario, paquete, enlace, fecha=None):
-    """Devuelve los bytes del PDF."""
+    """Devuelve los bytes del PDF. Para tableros institucionales: sin firma, sin nombre ni matrícula."""
+    institucional = paquete.institucional
     fecha = fecha or timezone.localdate()
     e = _estilos()
     historia = [
@@ -91,12 +92,16 @@ def generar_carta(usuario, paquete, enlace, fecha=None):
     ]
 
     destinatario = [usuario.destinatario]
-    if usuario.organismo:
+    if institucional and usuario.cargo:
+        destinatario.append(usuario.cargo)
+    elif not institucional and usuario.organismo:
         destinatario.append(usuario.organismo)
     destinatario.append("S / D")
     historia += [Paragraph("<br/>".join(escape(x) for x in destinatario), e["destinatario"]), Spacer(1, 0.8 * cm)]
 
-    texto = render_to_string("portal/mensajes/carta_acceso.txt", {"usuario": usuario, "paquete": paquete})
+    plantilla = "carta_acceso_institucional.txt" if institucional else "carta_acceso.txt"
+    texto = render_to_string(f"portal/mensajes/{plantilla}",
+                             {"usuario": usuario, "paquete": paquete, "vigencia": settings.ACCESO_VIGENCIA_DIAS})
     for parrafo in [p.strip() for p in texto.split("\n\n") if p.strip()]:
         if parrafo == "[[ENLACE]]":
             qr = Image(io.BytesIO(imagen_qr(enlace)), width=3.6 * cm, height=3.6 * cm)
@@ -116,6 +121,22 @@ def generar_carta(usuario, paquete, enlace, fecha=None):
             historia += [Paragraph(escape(" ".join(parrafo.split())), e["base"]), Spacer(1, 0.35 * cm)]
 
     historia.append(Spacer(1, 1.2 * cm))
+    if not institucional:
+        historia.append(_bloque_firma(e))
+
+    buffer = io.BytesIO()
+    metadatos = {"title": f"Acceso al tablero «{paquete.titulo}»", "author": settings.FIRMA_NOMBRE}
+    if institucional:
+        metadatos = {"title": f"Acceso al tablero «{paquete.titulo}»", "author": "", "creator": "", "producer": ""}
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4, leftMargin=2.7 * cm, rightMargin=2.7 * cm, topMargin=2.5 * cm, bottomMargin=2.5 * cm,
+        **metadatos,
+    )
+    doc.build(historia)
+    return buffer.getvalue()
+
+
+def _bloque_firma(e):
     firma = []
     ruta_firma = Path(settings.FIRMA_ARCHIVO)
     if ruta_firma.is_file():
@@ -124,12 +145,4 @@ def generar_carta(usuario, paquete, enlace, fecha=None):
     firma.append(Paragraph(f"{escape(settings.FIRMA_NOMBRE)}<br/>{escape(settings.FIRMA_MATRICULA)}", e["firma"]))
     tabla_firma = Table([[None, firma]], colWidths=[8.2 * cm, 7.0 * cm])
     tabla_firma.setStyle(TableStyle([("ALIGN", (1, 0), (1, 0), "CENTER"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    historia.append(tabla_firma)
-
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(
-        buffer, pagesize=A4, leftMargin=2.7 * cm, rightMargin=2.7 * cm, topMargin=2.5 * cm, bottomMargin=2.5 * cm,
-        title=f"Acceso al tablero «{paquete.titulo}»", author=settings.FIRMA_NOMBRE,
-    )
-    doc.build(historia)
-    return buffer.getvalue()
+    return tabla_firma

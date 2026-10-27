@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponsePermanentRedirect, HttpResponseRedirect
 
 
 class HostCanonicoMiddleware:
@@ -69,4 +69,36 @@ class CabecerasSeguridadMiddleware:
         if not request.path.startswith("/gestion/"):
             response.headers.setdefault("Content-Security-Policy", CSP_ESTRICTA)
         response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        return response
+
+
+class HostTableroMiddleware:
+    """Host de los tableros institucionales (settings.HOST_TABLERO, p. ej. tablero.gserelic.com).
+
+    En ese host solo existe /portal/: la raíz va a /portal/, robots.txt bloquea todo y cualquier
+    otra ruta (sitio, CV, /datos/, admin) da 404. Además, en ese host y para quien solo ve
+    tableros institucionales, las páginas del portal no se guardan en caché (Cache-Control: no-store),
+    así «atrás» después de salir no vuelve a mostrar el tablero.
+    Va después de AuthenticationMiddleware (necesita request.user).
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        from portal.marca import es_neutro, host_tablero
+
+        en_host = host_tablero(request)
+        if en_host:
+            if request.path == "/robots.txt":
+                return HttpResponse("User-agent: *\nDisallow: /\n", content_type="text/plain")
+            if request.path == "/":
+                return HttpResponseRedirect("/portal/")
+            if not request.path.startswith("/portal/"):
+                return HttpResponseNotFound("No encontrado", content_type="text/plain")
+        response = self.get_response(request)
+        if en_host:
+            response["X-Robots-Tag"] = "noindex, nofollow"
+        if request.path.startswith("/portal/") and es_neutro(request):
+            response["Cache-Control"] = "no-store"
         return response

@@ -1,17 +1,25 @@
 {% extends 'portal/base_portal.html' %}
 {% load static %}
-{% block title %}{{ paquete.titulo }} | Portal ES & BI{% endblock %}
+{% block title %}{% if marca_neutra %}{{ portal_nombre }}{% else %}{{ paquete.titulo }} | {{ portal_nombre }}{% endif %}{% endblock %}
 {% block portal %}
+{% if marca_neutra %}
+<section class="bienvenida border rounded-3 p-3 mb-3" aria-label="Bienvenida">
+    <p class="h5 mb-1">Bienvenido, {{ user.destinatario }}</p>
+    {% if user.cargo %}<p class="text-secondary mb-2">{{ user.cargo }}</p>{% endif %}
+    <p class="small mb-0">Acceso personal de {{ user.destinatario }}. Si usted no es {{ user.destinatario }}, cierre esta sesión.</p>
+</section>
+{% else %}
 <nav aria-label="Ruta" class="mb-3 small"><a href="{% url 'portal:inicio' %}">← Mis tableros</a></nav>
+{% endif %}
 
 <header class="d-flex flex-wrap align-items-start gap-3 mb-3">
     <div class="me-auto">
-        {% if not user.is_staff %}<p class="text-secondary small mb-1">Tablero preparado para {{ user.destinatario }}</p>{% endif %}
+        {% if not user.is_staff and not marca_neutra %}<p class="text-secondary small mb-1">Tablero preparado para {{ user.destinatario }}</p>{% endif %}
         <h1 class="h3 mb-1">{{ paquete.titulo }}</h1>
         <div class="d-flex flex-wrap gap-2 align-items-center small text-secondary">
-            {% include 'portal/_estado.html' %}
-            {% if paquete.organismo %}<span>{{ paquete.organismo }}</span>{% endif %}
-            {% if paquete.version %}<span>· Versión {{ paquete.version }}</span>{% endif %}
+            {% if not marca_neutra %}{% include 'portal/_estado.html' %}
+            {% if paquete.organismo %}<span>{{ paquete.organismo }}</span>{% endif %}{% endif %}
+            {% if paquete.version %}<span>{% if not marca_neutra %}· {% endif %}Versión {{ paquete.version }}</span>{% endif %}
             {% if paquete.fecha %}<span>· {{ paquete.fecha|date:"d/m/Y" }}</span>{% endif %}
         </div>
         {% if paquete.descripcion %}<p class="mt-2 mb-0">{{ paquete.descripcion }}</p>{% endif %}

@@ -45,6 +45,12 @@ CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 # Host canónico: las peticiones a los hosts listados en REDIRIGIR_A_CANONICO
 # se redirigen con 301 a este host (gserelic.com -> www.gserelic.com).
 HOST_CANONICO = os.environ.get("HOST_CANONICO", "")
+
+# Host de los tableros institucionales (sin marca): solo sirve /portal/. Ej.: tablero.gserelic.com
+HOST_TABLERO = os.environ.get("HOST_TABLERO", "").strip().lower()
+if HOST_TABLERO:
+    ALLOWED_HOSTS.append(HOST_TABLERO)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{HOST_TABLERO}")
 REDIRIGIR_A_CANONICO = env_list("REDIRIGIR_A_CANONICO", "")
 
 # Token para descargar respaldos desde un script (ver README). Vacío = deshabilitado.
@@ -85,6 +91,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "config.middleware.HostTableroMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "config.middleware.CabecerasSeguridadMiddleware",
@@ -106,6 +113,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "sitio.context_processors.sitio",
                 "datos.context_processors.datos",
+                "portal.context_processors.marca",
             ],
         },
     },

@@ -1,14 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
-{% block body_class %}portal-body{% endblock %}
+{% block iconos %}{% if marca_neutra %}<link rel="icon" href="data:,"><meta name="theme-color" content="#0A2240">{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block body_class %}portal-body{% if marca_neutra %} portal-neutro{% endif %}{% endblock %}
+{% block extra_head %}{% if marca_neutra %}<link rel="stylesheet" href="{% static 'portal/css/neutro.css' %}">{% endif %}{% endblock %}
 {% block content %}
 <nav class="navbar navbar-dark bg-dark" aria-label="Portal">
     <div class="container-fluid">
+        {% if marca_neutra %}
+        <a class="navbar-brand" href="{% url 'portal:inicio' %}">{{ portal_nombre }}</a>
+        {% else %}
         <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'portal:inicio' %}">
             <img src="{% static 'sitio/img/es_bi_logo.png' %}" alt="" width="32" height="32">
             ES & BI <span class="fw-light">· Portal de clientes</span>
         </a>
+        {% endif %}
         {% if user.is_authenticated %}
         <div class="d-flex align-items-center gap-3">
             <span class="text-light small d-none d-sm-inline">{{ user.destinatario }}</span>
@@ -17,7 +23,7 @@
                 <button type="submit" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
             </form>
         </div>
-        {% else %}
+        {% elif not marca_neutra %}
         <a class="nav-link text-light small" href="{% url 'sitio:inicio' %}">Volver al sitio</a>
         {% endif %}
     </div>
