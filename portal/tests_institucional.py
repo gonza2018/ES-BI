@@ -139,3 +139,24 @@ class HostTableroTests(BaseInstitucional):
         r = self.client.post("/portal/salir/", HTTP_HOST=HOST)
         self.assertEqual(r.status_code, 302)
         self.assertTrue(r["Location"].startswith("/portal/ingresar/"))
+
+
+class EnlaceCartaYErroresTests(BaseInstitucional):
+    @skipUnless(HAY_HERRAMIENTAS_PDF, "requiere requirements-dev.txt")
+    def test_el_enlace_de_la_carta_es_clicable_completo(self):
+        import pypdf
+
+        enlace = f"https://{HOST}/portal/acceso/" + "x" * 43 + "/tablero-economico-sde/"
+        lector = pypdf.PdfReader(io.BytesIO(generar_carta(self.cliente, self.paquete, enlace)))
+        uris = [a.get_object()["/A"]["/URI"] for a in lector.pages[0].get("/Annots", [])]
+        self.assertTrue(uris)
+        self.assertTrue(all(u == enlace for u in uris))
+
+    @override_settings(DEBUG=False)
+    def test_404_neutro_en_castellano(self):
+        r = self.client.get("/portal/acceso/cortado/", HTTP_HOST=HOST)
+        self.assertEqual(r.status_code, 404)
+        self.assertContains(r, "Página no encontrada", status_code=404)
+        self.assertContains(r, "escanear el código QR", status_code=404)
+        for marca in MARCAS:
+            self.assertNotContains(r, marca, status_code=404)
