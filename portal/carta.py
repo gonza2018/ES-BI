@@ -108,7 +108,9 @@ def generar_carta(usuario, paquete, enlace, fecha=None):
             bloque = [
                 Paragraph("Para acceder, ingrese al siguiente enlace o escanee el código QR:", e["base"]),
                 Spacer(1, 0.25 * cm),
-                Paragraph(escape(enlace), e["enlace"]),
+                # Enlace clicable en TODO su largo: si solo fuera texto, los lectores de PDF detectan
+                # nada más el primer renglón y abren una dirección cortada (404).
+                Paragraph(f'<a href="{escape(enlace)}" color="#0A2240">{escape(enlace)}</a>', e["enlace"]),
             ]
             tabla = Table([[bloque, qr]], colWidths=[11.2 * cm, 4.0 * cm])
             tabla.setStyle(TableStyle([
